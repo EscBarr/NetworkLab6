@@ -131,9 +131,10 @@ namespace NetworkLab6
         List<ClientInfo> ConvertClientList(List<Client> AllClients)
         {
             List<ClientInfo> CovertClients = new List<ClientInfo>();
-            var ClientInfo = new ClientInfo();
+            
             foreach (var client in AllClients)
             {
+                var ClientInfo = new ClientInfo();
                 ClientInfo.ClientId = client.ClientId;
                 ClientInfo.Name = client.Name;
                 CovertClients.Add(ClientInfo);

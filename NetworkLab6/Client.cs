@@ -9,7 +9,7 @@ namespace NetworkLab6
 {
     public class Client
     {
-        public Guid ClientId { get; init; }
+        public Guid ClientId { get; set; }
         public string Name { get; set; }
         protected internal NetworkStream Stream { get; private set; }
 

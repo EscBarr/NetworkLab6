@@ -184,6 +184,7 @@ namespace ClientForm
         private void fillListView(List<ClientInfo> clientInfos)
         {
             this.listView1.Invoke((MethodInvoker)delegate {
+                listView1.Items.Clear();
                 // Running on the UI thread
                 foreach (var item in clientInfos)
                 {
