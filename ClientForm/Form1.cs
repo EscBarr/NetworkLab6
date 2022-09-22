@@ -19,8 +19,6 @@ namespace ClientForm
     public partial class Form1 : Form
     {
         static string userName;
-        private const string ip = "127.0.0.1";
-        private const int port = 25565;
         public IPEndPoint ipPoint { get; set; }
         static TcpClient client;
         static NetworkStream stream;
@@ -132,7 +130,7 @@ namespace ClientForm
                     try
                     {
                         var Test = ByteArrayToObject(data);
-                        fillListView((List<ClientInfo>)Test);
+                        fillListView(Test);
                     }
                     catch (Exception ex)//вывод сообщения в чат
                     {

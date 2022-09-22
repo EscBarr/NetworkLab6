@@ -43,7 +43,7 @@
             this.IPtextBox.Name = "IPtextBox";
             this.IPtextBox.Size = new System.Drawing.Size(303, 23);
             this.IPtextBox.TabIndex = 0;
-            this.IPtextBox.Text = "127.0.0.1";
+            this.IPtextBox.Text = "192.168.1.38";
             // 
             // PorttextBox
             // 

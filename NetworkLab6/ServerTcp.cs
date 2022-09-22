@@ -32,7 +32,7 @@ namespace NetworkLab6
     public class ServerTcp
     {
         static int Port = 25565;
-        static string IP = "127.0.0.1";
+        static string IP = "192.168.1.38";
         static TcpListener listener;//для общего чата
         static Dictionary<int,ChatInfo> AllChats = new Dictionary<int, ChatInfo>();
         public static List<Client> ChatUsers = new List<Client>();
