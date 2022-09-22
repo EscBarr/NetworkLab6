@@ -108,5 +108,7 @@ namespace NetworkLab6
             if (client != null)
                 client.Close();
         }
+
+
     }
 }

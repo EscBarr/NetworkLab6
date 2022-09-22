@@ -5,6 +5,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Net.Http.Json;
+using System;
 
 namespace ClientForm
 {
@@ -118,8 +120,8 @@ namespace ClientForm
             {
                 try
                 {
-                    byte[] data = new byte[4096]; // буфер дл€ получаемых данных
-                    StringBuilder builder = new StringBuilder();
+                    byte[] data = new byte[8192]; // буфер дл€ получаемых данных
+               
                     int bytes = 0;
                     do
                     {
@@ -127,22 +129,21 @@ namespace ClientForm
                     }
                     while (stream.DataAvailable);
                     data = TrimEnd(data);
-                    try
+                    if(TryParseJSON(data))
                     {
                         var Test = ByteArrayToObject(data);
                         fillListView(Test);
                     }
-                    catch (Exception ex)//вывод сообщени€ в чат
+                    else//вывод сообщени€ в чат
                     {
-                        builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
-                        string message = builder.ToString();
+                        
+                        string message = Encoding.Unicode.GetString(data);
                         this.tabControl1.Invoke((MethodInvoker)delegate {
                             // Running on the UI thread
                             ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
                             ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
                         });
                     }
-
                 }
                 catch
                 {
@@ -201,6 +202,20 @@ namespace ClientForm
             List<ClientInfo>? obj = JsonSerializer.Deserialize<List<ClientInfo>>(arrBytes);
 
             return obj;
+        }
+
+       
+        private static bool TryParseJSON(byte[] arrBytes)
+        {
+            try
+            {
+                JsonSerializer.Deserialize<List<ClientInfo>>(arrBytes);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
