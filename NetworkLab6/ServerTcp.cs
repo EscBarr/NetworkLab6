@@ -7,35 +7,18 @@ using System.Net.Sockets;
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Lab6Dependecies;
+using System.Net.WebSockets;
 
 namespace NetworkLab6
 {
-    [Serializable]
-    public record ClientInfo
-    {
-       
-        public Guid ClientId { get; set; }
-        public string Name { get; set; }
-    }
-
-    public record ChatInfo
-    {
-        public Guid ChatId { get; init; }
-        public string ChatName { get; set; }
-
-        public TcpListener listener;//у каждого чата свой слушатель???
-
-        public List<Client> CurChatUsers = new List<Client>();//у каждого чата свой список пользователей
-    }
-
-
     public class ServerTcp
     {
-        static int Port = 25565;
-        static string IP = "192.168.1.38";
+        public int Port = 25565;
+        public string IP = "192.168.1.38";
         static TcpListener listener;//для общего чата
-        static Dictionary<int,ChatInfo> AllChats = new Dictionary<int, ChatInfo>();
-        public static List<Client> ChatUsers = new List<Client>();
+        public Dictionary<int, List<Client>> AllChats = new Dictionary<int, List<Client>>();
+        public List<Client> ChatUsers = new List<Client>();
 
        
         public void Initiate()
@@ -64,7 +47,7 @@ namespace NetworkLab6
             }
         }
 
-        public void InitiateChat(int Port, List<Client> SelectedUsers)//ПОРТ ДОЛЖЕН ВЫБРАТЬ САМ СЕРВЕР? ИЛИ СОЗДАВАТЬ НОВЫЙ СЛУШАТЕЛЬ У ПОЛЬЗОВАТЕЛЯ С НОВЫМ ПОТОКОМ
+        public void InitiateChat(List<Client> SelectedUsers)
         {
 
         }
@@ -82,16 +65,13 @@ namespace NetworkLab6
             // и удаляем его из списка подключений
             if (client != null)
                 ChatUsers.Remove(client);
-            BroadcastUsers();
+            var ListUsers = ConvertClientList(ChatUsers);
+            BroadcastUsers(ListUsers,-1);
         }
         // отключение всех клиентов
         public void Shutdown()
         {
             listener.Stop(); //остановка сервера
-            foreach (var listeners in AllChats)
-            {
-                listeners.Value.listener.Stop();
-            }
 
             for (int i = 0; i < ChatUsers.Count; i++)
             {
@@ -101,34 +81,71 @@ namespace NetworkLab6
         }
 
         // трансляция сообщения подключенным клиентам
-        public void BroadcastMessage(string message, Guid id)
+        public void BroadcastMessage(string message, Guid id, int ChatId)
         {
-            byte[] data = Encoding.Unicode.GetBytes(message);
-            for (int i = 0; i < ChatUsers.Count; i++)
+            if(ChatId==-1)
             {
-                //if (ChatUsers[i].ClientId != id) // если id клиента не равно id отправляющего
-                //{
-                    ChatUsers[i].Stream.Write(data, 0, data.Length); //передача данных
-                //}
+                byte[] data = Encoding.Unicode.GetBytes(message);
+                for (int i = 0; i < ChatUsers.Count; i++)
+                {
+                    if (ChatUsers[i].ClientId != id) // если id клиента не равно id отправляющего
+                    {
+                        ChatUsers[i].Stream.Write(data, 0, data.Length); //передача данных
+                    }
+                }
             }
+            else
+            {
+                var Users = AllChats[ChatId];
+                byte[] data = Encoding.Unicode.GetBytes(message);
+                for (int i = 0; i < Users.Count; i++)
+                {
+                    if (Users[i].ClientId != id) // если id клиента не равно id отправляющего
+                    {
+                        Users[i].Stream.Write(data, 0, data.Length); //передача данных
+                    }
+                }
+            }
+           
         }
 
-        // трансляция списка подключенных пользователей?????????????????????
-        public void BroadcastUsers()
+        // трансляция списка подключенных пользователей
+        public void BroadcastUsers(List<ClientInfo> ListUsers, int ChatId)
         {
-            var ListUsers = ConvertClientList(ChatUsers);
-            var data = ObjectToByteArray(ListUsers);
-            //byte[] data = Encoding.Unicode.GetBytes(message);
+            var data = MessageHandler.ObjectToByteArray(ListUsers);//получаем размер сообщения
+            var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.UserList, data.Length);//подготавливаем заголовок
+            BroadcastToAllUsers(MessageHeader, ChatId);
+            BroadcastToAllUsers(data,ChatId);
+           
+        }
+
+        public void BroadcastToAllUsers(byte[] data, int ChatId)//В основном для рассылки списка пользователей
+        {
             for (int i = 0; i < ChatUsers.Count; i++)
             {
-                //if (ChatUsers[i].ClientId != id) // если id клиента не равно id отправляющего
-                //{
                 ChatUsers[i].Stream.Write(data, 0, data.Length); //передача данных
-                //}
+            }
+
+            if (ChatId == -1)
+            {
+               
+                for (int i = 0; i < ChatUsers.Count; i++)
+                {
+                   ChatUsers[i].Stream.Write(data, 0, data.Length); //передача данных 
+                }
+            }
+            else
+            {
+                var Users = AllChats[ChatId];
+
+                for (int i = 0; i < Users.Count; i++)
+                {
+                  Users[i].Stream.Write(data, 0, data.Length); //передача данных
+                }
             }
         }
 
-        List<ClientInfo> ConvertClientList(List<Client> AllClients)
+        public List<ClientInfo> ConvertClientList(List<Client> AllClients)
         {
             List<ClientInfo> CovertClients = new List<ClientInfo>();
             
@@ -142,13 +159,7 @@ namespace NetworkLab6
             return CovertClients;
         }
 
-        byte[] ObjectToByteArray(object obj)
-        {
-            if (obj == null)
-                return null;
-            return JsonSerializer.SerializeToUtf8Bytes(obj);
-          
-        }
+
 
     }
 }

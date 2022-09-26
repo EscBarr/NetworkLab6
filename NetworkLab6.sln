@@ -4,8 +4,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetworkLab6", "NetworkLab6\NetworkLab6.csproj", "{0F60765C-C2F3-4C24-AF71-EC9A5161B28A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6E1E6BDB-8BF3-45F9-8816-FE4B4E469092} = {6E1E6BDB-8BF3-45F9-8816-FE4B4E469092}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientForm", "ClientForm\ClientForm.csproj", "{F9CFE1AD-8DA5-4BA6-AA51-16A96FEA4B84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientForm", "ClientForm\ClientForm.csproj", "{F9CFE1AD-8DA5-4BA6-AA51-16A96FEA4B84}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6E1E6BDB-8BF3-45F9-8816-FE4B4E469092} = {6E1E6BDB-8BF3-45F9-8816-FE4B4E469092}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lab6Dependecies", "Lab6Dependecies\Lab6Dependecies.csproj", "{6E1E6BDB-8BF3-45F9-8816-FE4B4E469092}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +29,10 @@ Global
 		{F9CFE1AD-8DA5-4BA6-AA51-16A96FEA4B84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F9CFE1AD-8DA5-4BA6-AA51-16A96FEA4B84}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F9CFE1AD-8DA5-4BA6-AA51-16A96FEA4B84}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E1E6BDB-8BF3-45F9-8816-FE4B4E469092}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E1E6BDB-8BF3-45F9-8816-FE4B4E469092}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E1E6BDB-8BF3-45F9-8816-FE4B4E469092}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E1E6BDB-8BF3-45F9-8816-FE4B4E469092}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

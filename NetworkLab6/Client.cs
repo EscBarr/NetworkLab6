@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Lab6Dependecies;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace NetworkLab6
 {
@@ -45,24 +47,22 @@ namespace NetworkLab6
 
                 message = "Сервер: " + Name + " вошел в чат";
                 // посылаем сообщение о входе в чат всем подключенным пользователям
-                server.BroadcastMessage(message, this.ClientId);
-                server.BroadcastUsers();
+                server.BroadcastMessage(message, ClientId,-1);//Оповещение для пользователей чата
+                var ListUsers = server.ConvertClientList(server.ChatUsers);//Уменьшаем размер списка пользователей
+                server.BroadcastUsers(ListUsers,-1);//-1 так мы только установили соединение и пользователю нужен основной список
                 Console.WriteLine(message);
                 // в бесконечном цикле получаем сообщения от клиента
                 while (true)
                 {
                     try
                     {
-                        message = GetMessage();
-                        message = String.Format("{0}: {1}", Name, message);
-                        Console.WriteLine(message);
-                        server.BroadcastMessage(message, this.ClientId);
+                        HandleMessageType();
                     }
                     catch
                     {
                         message = String.Format("{0}: покинул чат", Name);
                         Console.WriteLine(message);
-                        server.BroadcastMessage(message, this.ClientId);
+                        server.BroadcastMessage(message, ClientId,-1);
                         break;
                     }
                 }
@@ -85,7 +85,7 @@ namespace NetworkLab6
         //    return NotImplementedException();
         //}
 
-        private string GetMessage()
+        private string GetMessage()//Получение первичной информации о сообщении тип/размер а также обычных текстовых сообщений
         {
             byte[] data = new byte[64]; // буфер для получаемых данных
             StringBuilder builder = new StringBuilder();
@@ -97,11 +97,77 @@ namespace NetworkLab6
             }
             while (Stream.DataAvailable);
 
+            
+
             return builder.ToString();
         }
 
+        private byte[] GetMessageWithSize(int size)//Получение первичной информации о сообщении тип/размер
+        {
+            byte[] data = new byte[size]; // буфер для получаемых данных
+            int bytes = 0;
+            do
+            {
+                bytes = Stream.Read(data, 0, data.Length);
+            }
+            while (Stream.DataAvailable);
+
+            return data;
+        }
+
+        private void HandleMessageType()
+        {
+            string message = GetMessage();//Получаем JSON заголовок
+            var MessageHeader = MessageHandler.StringToObject<PacketInfo>(message);//Сериализуем в объект
+            switch (MessageHeader.Type)//Обработка в зависимости от отправленного пользователем сообщения
+            {
+                case MessageTypes.Text:
+                    HandleMessages(MessageHeader);
+                    break;
+                case MessageTypes.File:
+                    HandleFile(MessageHeader);
+                    break;
+                case MessageTypes.ChatCreation:
+                    HandleChatCreation();
+                    break;
+                case MessageTypes.UserListForChat:
+                    HandleUserList(MessageHeader);
+                    break;
+                case MessageTypes.P2PChat:
+                    HandleP2PChatCreation();
+                    break;
+            }
+        }
+
+
+        private void HandleMessages(PacketInfo packetInfo)
+        {
+            string message = GetMessage();
+            message = String.Format("{0}: {1}", Name, message);
+            Console.WriteLine(message);
+            server.BroadcastMessage(message, this.ClientId,packetInfo.ChatID);
+         
+        }
+        private void HandleFile(PacketInfo packetInfo)
+        {
+
+        }
+
+        private void HandleUserList(PacketInfo packetInfo)
+        {
+
+        }
+
+        private void HandleChatCreation()
+        {
+
+        }
+        private void HandleP2PChatCreation()
+        {
+
+        }
         // закрытие подключения
-        protected internal void Close()
+        public void Close()
         {
             if (Stream != null)
                 Stream.Close();

@@ -128,7 +128,7 @@ namespace ClientForm
                         bytes = stream.Read(data, 0, data.Length);
                     }
                     while (stream.DataAvailable);
-                    data = TrimEnd(data);
+                    data = TrimEnd(data,bytes);
                     if(TryParseJSON(data))
                     {
                         var Test = ByteArrayToObject(data);
@@ -154,11 +154,11 @@ namespace ClientForm
             }
         }
 
-        public static byte[] TrimEnd(byte[] array)
+        public static byte[] TrimEnd(byte[] array,int size)
         {
-            int lastIndex = Array.FindLastIndex(array, b => b != 0);
+            //int lastIndex = Array.FindLastIndex(array, b => b != 0);
 
-            Array.Resize(ref array, lastIndex + 1);
+            Array.Resize(ref array, size  + 1);
 
             return array;
         }
@@ -178,6 +178,13 @@ namespace ClientForm
             {
                 byte[] data = Encoding.Unicode.GetBytes(textBox1.Text);
                 stream.Write(data, 0, data.Length);
+                var message = String.Format("{0}: {1}", userName, textBox1.Text);
+                this.tabControl1.Invoke((MethodInvoker)delegate {
+                    // Running on the UI thread
+                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
+                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
+                });
+                textBox1.Text = "";
             }
             
         }
@@ -196,12 +203,9 @@ namespace ClientForm
         }
 
         // Convert a byte array to an Object
-        private List<ClientInfo> ByteArrayToObject(byte[] arrBytes)
+        private T ByteArrayToObject<T>(byte[] arrBytes)
         {
-
-            List<ClientInfo>? obj = JsonSerializer.Deserialize<List<ClientInfo>>(arrBytes);
-
-            return obj;
+            return JsonSerializer.Deserialize<T>(arrBytes);
         }
 
        
