@@ -109,7 +109,7 @@ namespace NetworkLab6
         // трансляция сообщения подключенным клиентам
         public void BroadcastMessage(string message, Guid id, int ChatId)
         {
-            byte[] data = Encoding.Unicode.GetBytes(message);
+            byte[] data = Encoding.UTF8.GetBytes(message);
             if (ChatId==-1)
             {
                 for (int i = 0; i < ChatUsers.Count; i++)
@@ -138,8 +138,10 @@ namespace NetworkLab6
         public void BroadcastUsers(List<ClientInfo> ListUsers, int ChatId)
         {
             var data = MessageHandler.ObjectToByteArray(ListUsers);//получаем размер сообщения
-            var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.UserList, data.Length);//подготавливаем заголовок
+            var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.UserList, data.Length,ChatId);//подготавливаем заголовок
+            var test = MessageHandler.ByteArrayToObject<PacketInfo>(MessageHeader);
             BroadcastToAllUsers(MessageHeader, ChatId);
+            Task.Delay(10);
             BroadcastToAllUsers(data,ChatId);
            
         }

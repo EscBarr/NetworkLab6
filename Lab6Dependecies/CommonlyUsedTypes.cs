@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Lab6Dependecies
 {
+    [Serializable]
     public enum MessageTypes : ushort
     {
         Text,
@@ -20,9 +21,9 @@ namespace Lab6Dependecies
     [Serializable]
     public class PacketInfo
     {
-        public MessageTypes Type;
-        public int? Size;
-        public int ChatID;
+        public MessageTypes Type { get; set; }
+        public int? Size { get; set; }
+        public int ChatID { get; set; }
         //public List<ClientInfo>? ClientsForChat;
     }
 
@@ -54,11 +55,15 @@ namespace Lab6Dependecies
 
         }
 
-        public static byte[] PrepareMessageHeader(MessageTypes Type, int? Size)
+        public static byte[] PrepareMessageHeader(MessageTypes Type, int? Size, int ChatId)
         {
-            var Packet = new PacketInfo();
-            Packet.Type = Type;
-            Packet.Size = Size;
+            var Packet = new PacketInfo
+            {
+                Type = Type,
+                Size = Size,
+                ChatID = ChatId
+            };
+        
             return ObjectToByteArray(Packet);
         }
 

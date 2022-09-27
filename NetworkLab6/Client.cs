@@ -47,7 +47,7 @@ namespace NetworkLab6
 
                 message = "Сервер: " + Name + " вошел в чат";
                 // посылаем сообщение о входе в чат всем подключенным пользователям
-                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text,null);//подготавливаем заголовок
+                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text,null,-1);//подготавливаем заголовок
                 server.BroadcastMessageHeader(MessageHeader, ClientId, -1);
                 server.BroadcastMessage(message, ClientId,-1);//Оповещение для пользователей чата
                 var ListUsers = server.ConvertClientList(server.ChatUsers);//Уменьшаем размер списка пользователей
@@ -95,7 +95,7 @@ namespace NetworkLab6
             do
             {
                 bytes = Stream.Read(data, 0, data.Length);
-                builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+                builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
             }
             while (Stream.DataAvailable);
 

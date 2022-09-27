@@ -42,7 +42,7 @@ namespace ClientForm
                 client.Connect(ipPoint);
                 stream = client.GetStream(); // получаем поток
                 string message = userName;
-                byte[] data = Encoding.Unicode.GetBytes(message);
+                byte[] data = Encoding.UTF8.GetBytes(message);
                 stream.Write(data, 0, data.Length);
                 // запускаем новый поток для получения данных
                 Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
@@ -124,7 +124,7 @@ namespace ClientForm
             do
             {
                 bytes = stream.Read(data, 0, data.Length);
-                builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+                builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
             }
             while (stream.DataAvailable);
 
@@ -267,7 +267,7 @@ namespace ClientForm
         {
             if(!String.IsNullOrEmpty(textBox1.Text))
             {
-                byte[] data = Encoding.Unicode.GetBytes(textBox1.Text);
+                byte[] data = Encoding.UTF8.GetBytes(textBox1.Text);
                 stream.Write(data, 0, data.Length);
                 var message = String.Format("{0}: {1}", userName, textBox1.Text);
                 this.tabControl1.Invoke((MethodInvoker)delegate {
