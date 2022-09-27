@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Net.Http.Json;
 using System;
+using Lab6Dependecies;
 
 namespace ClientForm
 {
@@ -110,40 +111,125 @@ namespace ClientForm
 
         //    while (true)
         //    {
-               
+
         //    }
         //}
         // получение сообщений
+
+        private string GetMessage()//Получение первичной информации о сообщении тип/размер а также обычных текстовых сообщений
+        {
+            byte[] data = new byte[64]; // буфер для получаемых данных
+            StringBuilder builder = new StringBuilder();
+            int bytes = 0;
+            do
+            {
+                bytes = stream.Read(data, 0, data.Length);
+                builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+            }
+            while (stream.DataAvailable);
+
+            return builder.ToString();
+        }
+
+        private void HandleMessageType()
+        {
+            string message = GetMessage();//Получаем JSON заголовок
+            var MessageHeader = MessageHandler.StringToObject<PacketInfo>(message);//Сериализуем в объект
+            switch (MessageHeader.Type)//Обработка в зависимости от отправленного пользователем сообщения
+            {
+                case MessageTypes.Text:
+                    HandleMessages(MessageHeader);
+                    break;
+                case MessageTypes.File:
+                    HandleFile(MessageHeader);
+                    break;
+                case MessageTypes.ChatCreation:
+                    HandleChatCreation();
+                    break;
+                case MessageTypes.UserList:
+                    HandleUserList(MessageHeader);
+                    break;
+                case MessageTypes.P2PChat:
+                    HandleP2PChatCreation();
+                    break;
+            }
+        }
+
+        private byte[] GetMessageWithSize(int size)//Получение первичной информации о сообщении тип/размер
+        {
+            byte[] data = new byte[size]; // буфер для получаемых данных
+            int bytes = 0;
+            do
+            {
+                bytes = stream.Read(data, 0, data.Length);
+            }
+            while (stream.DataAvailable);
+
+            return data;
+        }
+
+        private void HandleMessages(PacketInfo messageHeader)
+        {
+            var data = GetMessageWithSize((int)messageHeader.Size);
+            throw new NotImplementedException();
+        }
+
+        private void HandleP2PChatCreation()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleUserList(PacketInfo messageHeader)
+        {
+            var data = GetMessageWithSize((int)messageHeader.Size);
+            throw new NotImplementedException();
+
+        }
+
+        private void HandleChatCreation()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void HandleFile(PacketInfo messageHeader)
+        {
+            throw new NotImplementedException();
+        }
+
+      
+
+        //byte[] data = new byte[8192]; // буфер для получаемых данных
+
+        //int bytes = 0;
+        //do
+        //{
+        //    bytes = stream.Read(data, 0, data.Length);
+        //}
+        //while (stream.DataAvailable);
+        //data = TrimEnd(data,bytes);
+        //if(TryParseJSON(data))
+        //{
+        //    var Test = ByteArrayToObject(data);
+        //    fillListView(Test);
+        //}
+        //else//вывод сообщения в чат
+        //{
+
+        //    string message = Encoding.Unicode.GetString(data);
+        //    this.tabControl1.Invoke((MethodInvoker)delegate {
+        //        // Running on the UI thread
+        //        ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
+        //        ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
+        //    });
+        //}
+
         void ReceiveMessage()
         {
             while (true)
             {
                 try
                 {
-                    byte[] data = new byte[8192]; // буфер для получаемых данных
-               
-                    int bytes = 0;
-                    do
-                    {
-                        bytes = stream.Read(data, 0, data.Length);
-                    }
-                    while (stream.DataAvailable);
-                    data = TrimEnd(data,bytes);
-                    if(TryParseJSON(data))
-                    {
-                        var Test = ByteArrayToObject(data);
-                        fillListView(Test);
-                    }
-                    else//вывод сообщения в чат
-                    {
-                        
-                        string message = Encoding.Unicode.GetString(data);
-                        this.tabControl1.Invoke((MethodInvoker)delegate {
-                            // Running on the UI thread
-                            ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
-                            ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
-                        });
-                    }
+                    HandleMessageType();
                 }
                 catch
                 {
