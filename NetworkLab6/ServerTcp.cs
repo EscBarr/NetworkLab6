@@ -80,12 +80,11 @@ namespace NetworkLab6
             Environment.Exit(0); //завершение процесса
         }
 
-        // трансляция сообщения подключенным клиентам
-        public void BroadcastMessage(string message, Guid id, int ChatId)
+        public void BroadcastMessageHeader(byte[] data, Guid id, int ChatId)
         {
-            if(ChatId==-1)
+            if (ChatId == -1)
             {
-                byte[] data = Encoding.Unicode.GetBytes(message);
+                
                 for (int i = 0; i < ChatUsers.Count; i++)
                 {
                     if (ChatUsers[i].ClientId != id) // если id клиента не равно id отправляющего
@@ -97,7 +96,33 @@ namespace NetworkLab6
             else
             {
                 var Users = AllChats[ChatId];
-                byte[] data = Encoding.Unicode.GetBytes(message);
+                for (int i = 0; i < Users.Count; i++)
+                {
+                    if (Users[i].ClientId != id) // если id клиента не равно id отправляющего
+                    {
+                        Users[i].Stream.Write(data, 0, data.Length); //передача данных
+                    }
+                }
+            }
+        }
+
+        // трансляция сообщения подключенным клиентам
+        public void BroadcastMessage(string message, Guid id, int ChatId)
+        {
+            byte[] data = Encoding.Unicode.GetBytes(message);
+            if (ChatId==-1)
+            {
+                for (int i = 0; i < ChatUsers.Count; i++)
+                {
+                    if (ChatUsers[i].ClientId != id) // если id клиента не равно id отправляющего
+                    {
+                        ChatUsers[i].Stream.Write(data, 0, data.Length); //передача данных
+                    }
+                }
+            }
+            else
+            {
+                var Users = AllChats[ChatId];
                 for (int i = 0; i < Users.Count; i++)
                 {
                     if (Users[i].ClientId != id) // если id клиента не равно id отправляющего
@@ -121,11 +146,6 @@ namespace NetworkLab6
 
         public void BroadcastToAllUsers(byte[] data, int ChatId)//В основном для рассылки списка пользователей
         {
-            for (int i = 0; i < ChatUsers.Count; i++)
-            {
-                ChatUsers[i].Stream.Write(data, 0, data.Length); //передача данных
-            }
-
             if (ChatId == -1)
             {
                

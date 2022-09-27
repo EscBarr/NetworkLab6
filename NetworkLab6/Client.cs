@@ -47,6 +47,8 @@ namespace NetworkLab6
 
                 message = "Сервер: " + Name + " вошел в чат";
                 // посылаем сообщение о входе в чат всем подключенным пользователям
+                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text,null);//подготавливаем заголовок
+                server.BroadcastMessageHeader(MessageHeader, ClientId, -1);
                 server.BroadcastMessage(message, ClientId,-1);//Оповещение для пользователей чата
                 var ListUsers = server.ConvertClientList(server.ChatUsers);//Уменьшаем размер списка пользователей
                 server.BroadcastUsers(ListUsers,-1);//-1 так мы только установили соединение и пользователю нужен основной список

@@ -170,8 +170,12 @@ namespace ClientForm
 
         private void HandleMessages(PacketInfo messageHeader)
         {
-            var data = GetMessageWithSize((int)messageHeader.Size);
-            throw new NotImplementedException();
+            var message = GetMessage();
+            this.tabControl1.Invoke((MethodInvoker)delegate {
+                // Running on the UI thread
+                ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
+                ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
+            });
         }
 
         private void HandleP2PChatCreation()
@@ -182,7 +186,8 @@ namespace ClientForm
         private void HandleUserList(PacketInfo messageHeader)
         {
             var data = GetMessageWithSize((int)messageHeader.Size);
-            throw new NotImplementedException();
+            var Test = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
+            fillListView(Test);
 
         }
 
@@ -288,11 +293,11 @@ namespace ClientForm
            
         }
 
-        // Convert a byte array to an Object
-        private T ByteArrayToObject<T>(byte[] arrBytes)
-        {
-            return JsonSerializer.Deserialize<T>(arrBytes);
-        }
+        //// Convert a byte array to an Object
+        //private T ByteArrayToObject<T>(byte[] arrBytes)
+        //{
+        //    return JsonSerializer.Deserialize<T>(arrBytes);
+        //}
 
        
         private static bool TryParseJSON(byte[] arrBytes)
