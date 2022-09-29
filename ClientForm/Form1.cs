@@ -11,13 +11,13 @@ using Lab6Dependecies;
 
 namespace ClientForm
 {
-    [Serializable]
-    public record ClientInfo
-    {
+    //[Serializable]
+    //public record ClientInfo
+    //{
 
-        public Guid ClientId { get; set; }
-        public string Name { get; set; }
-    }
+    //    public Guid ClientId { get; set; }
+    //    public string Name { get; set; }
+    //}
 
     public partial class Form1 : Form
     {
@@ -25,7 +25,8 @@ namespace ClientForm
         public IPEndPoint ipPoint { get; set; }
         static TcpClient client;
         static NetworkStream stream;
-
+        public Dictionary<int, List<ClientInfo>> AllChats = new Dictionary<int, List<ClientInfo>>();
+        public List<ClientInfo> MainChat = new List<ClientInfo>();
         public Form1()
         {
             InitializeComponent();
@@ -54,16 +55,7 @@ namespace ClientForm
             }
         }
 
-        private void ConnectToServer_Click(object sender, EventArgs e)
-        {
-            FormConnect newForm = new FormConnect();
-            // passing this in ShowDialog will set the .Owner 
-            // property of the child form
-            newForm.TopMost = true;
-            newForm.Show(this);
-         
-            
-        }
+     
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -103,18 +95,6 @@ namespace ClientForm
             //textBoxForChat.Text = "(Enter some text)";
             //tabControl1.TabPages[tabControl1.SelectedIndex].Controls.Add(textBoxForChat);
         }
-
-        // отправка сообщений
-        //void SendMessage()
-        //{
-        //    Console.WriteLine("Введите сообщение: ");
-
-        //    while (true)
-        //    {
-
-        //    }
-        //}
-        // получение сообщений
 
         private string GetMessage()//Получение первичной информации о сообщении тип/размер а также обычных текстовых сообщений
         {
@@ -186,8 +166,16 @@ namespace ClientForm
         private void HandleUserList(PacketInfo messageHeader)
         {
             var data = GetMessageWithSize((int)messageHeader.Size);
-            var Test = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
-            fillListView(Test);
+            if (messageHeader.ChatID == -1)
+            {
+                MainChat = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
+                fillListView(MainChat);
+            }
+            else
+            {
+
+            }
+            
 
         }
 
@@ -200,33 +188,6 @@ namespace ClientForm
         {
             throw new NotImplementedException();
         }
-
-      
-
-        //byte[] data = new byte[8192]; // буфер для получаемых данных
-
-        //int bytes = 0;
-        //do
-        //{
-        //    bytes = stream.Read(data, 0, data.Length);
-        //}
-        //while (stream.DataAvailable);
-        //data = TrimEnd(data,bytes);
-        //if(TryParseJSON(data))
-        //{
-        //    var Test = ByteArrayToObject(data);
-        //    fillListView(Test);
-        //}
-        //else//вывод сообщения в чат
-        //{
-
-        //    string message = Encoding.Unicode.GetString(data);
-        //    this.tabControl1.Invoke((MethodInvoker)delegate {
-        //        // Running on the UI thread
-        //        ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
-        //        ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
-        //    });
-        //}
 
         void ReceiveMessage()
         {
@@ -260,7 +221,7 @@ namespace ClientForm
                 stream.Close();//отключение потока
             if (client != null)
                 client.Close();//отключение клиента
-            Environment.Exit(0); //завершение процесса
+            //Environment.Exit(0); //завершение процесса
         }
 
         private void Sendbutton_Click(object sender, EventArgs e)
@@ -268,6 +229,9 @@ namespace ClientForm
             if(!String.IsNullOrEmpty(textBox1.Text))
             {
                 byte[] data = Encoding.UTF8.GetBytes(textBox1.Text);
+                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, data.Length, -1);//подготавливаем заголовок
+                stream.Write(MessageHeader,0, MessageHeader.Length);
+                Task.Delay(10);
                 stream.Write(data, 0, data.Length);
                 var message = String.Format("{0}: {1}", userName, textBox1.Text);
                 this.tabControl1.Invoke((MethodInvoker)delegate {
@@ -293,24 +257,47 @@ namespace ClientForm
            
         }
 
-        //// Convert a byte array to an Object
-        //private T ByteArrayToObject<T>(byte[] arrBytes)
+        //private static bool TryParseJSON(byte[] arrBytes)
         //{
-        //    return JsonSerializer.Deserialize<T>(arrBytes);
+        //    try
+        //    {
+        //        JsonSerializer.Deserialize<List<ClientInfo>>(arrBytes);
+        //        return true;
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
         //}
 
-       
-        private static bool TryParseJSON(byte[] arrBytes)
+        public void ReceiveChatList(List<ClientInfo> clients)
         {
-            try
-            {
-                JsonSerializer.Deserialize<List<ClientInfo>>(arrBytes);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            
+        }
+
+        private void GroupChatMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ConnectToServer_Click(object sender, EventArgs e)
+        {
+            FormConnect newForm = new FormConnect();
+            // passing this in ShowDialog will set the .Owner 
+            // property of the child form
+            newForm.TopMost = true;
+            newForm.Show(this);
+            CreateChatMenuItem.Enabled = true;
+            DisconnectFromServer.Enabled = true;
+
+        }
+   
+
+        private void DisconnectFromServer_Click(object sender, EventArgs e)
+        {
+            Disconnect();
+            CreateChatMenuItem.Enabled = false;
+            DisconnectFromServer.Enabled = false;
         }
     }
 }

@@ -15,11 +15,7 @@ namespace ClientForm
 {
     public partial class FormConnect : Form
     {
-        //static string userName;
-        //private const string ip = "127.0.0.1";
-        //private const int port = 25565;
-        //static TcpClient client;
-        //static NetworkStream stream;
+
         private static bool ValidateIPv4(string ipString)
         {
             if (ipString.Count(c => c == '.') != 3) return false;

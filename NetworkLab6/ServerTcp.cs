@@ -19,7 +19,6 @@ namespace NetworkLab6
         static TcpListener listener;//для общего чата
         public Dictionary<int, List<Client>> AllChats = new Dictionary<int, List<Client>>();
         public List<Client> ChatUsers = new List<Client>();
-
        
         public void Initiate()
         {

@@ -83,9 +83,11 @@
             // 
             // DisconnectFromServer
             // 
+            this.DisconnectFromServer.Enabled = false;
             this.DisconnectFromServer.Name = "DisconnectFromServer";
             this.DisconnectFromServer.Size = new System.Drawing.Size(291, 22);
             this.DisconnectFromServer.Text = "Отключиться от текущего сервера";
+            this.DisconnectFromServer.Click += new System.EventHandler(this.DisconnectFromServer_Click);
             // 
             // CreateChatMenuItem
             // 
@@ -102,6 +104,7 @@
             this.GroupChatMenuItem.Name = "GroupChatMenuItem";
             this.GroupChatMenuItem.Size = new System.Drawing.Size(137, 22);
             this.GroupChatMenuItem.Text = "Групповой";
+            this.GroupChatMenuItem.Click += new System.EventHandler(this.GroupChatMenuItem_Click);
             // 
             // PersonalChatMenuItem
             // 
@@ -111,9 +114,11 @@
             // 
             // listView1
             // 
+            this.listView1.BackgroundImageTiled = true;
             this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.NameColumnHeader});
             this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listView1.GridLines = true;
             this.listView1.Location = new System.Drawing.Point(0, 19);
             this.listView1.Margin = new System.Windows.Forms.Padding(4);
             this.listView1.Name = "listView1";
@@ -125,7 +130,7 @@
             // NameColumnHeader
             // 
             this.NameColumnHeader.Text = "Имя";
-            this.NameColumnHeader.Width = 198;
+            this.NameColumnHeader.Width = 400;
             // 
             // label1
             // 

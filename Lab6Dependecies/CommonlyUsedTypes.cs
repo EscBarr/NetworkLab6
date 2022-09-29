@@ -41,7 +41,7 @@ namespace Lab6Dependecies
         public int ChatID { get; set; }
         public string ChatName { get; set; }
 
-        public List<ClientInfo> CurChatUsers = new List<ClientInfo>();//у каждого чата свой список пользователей
+        public List<ClientInfo> CurChatUsers { get; set; }//у каждого чата свой список пользователей
     }
 
     public static class MessageHandler

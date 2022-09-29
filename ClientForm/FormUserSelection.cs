@@ -1,0 +1,45 @@
+﻿using Lab6Dependecies;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ClientForm
+{
+    public partial class FormUserSelection : Form
+    {
+        List<ClientInfo> Allclients;
+        public FormUserSelection(List<ClientInfo> clients)
+        {
+            InitializeComponent();
+            Allclients = clients;
+            this.listView1.Invoke((MethodInvoker)delegate {
+                listView1.Items.Clear();
+                // Running on the UI thread
+                foreach (var item in Allclients)
+                {
+                    listView1.Items.Add(item.Name);
+                    listView1.Items.Add(item.ClientId.ToString());
+                }
+            });
+        }
+
+        private void buttonSubmit_Click(object sender, EventArgs e)
+        {
+
+            if (listView1.SelectedItems.Count >= 1)
+            {
+                List<ClientInfo> Selected = new List<ClientInfo>();
+                foreach (ListViewItem item in listView1.Items)
+                {
+                   Selected.Add(Allclients.First(S => S.ClientId.ToString() == item.SubItems[1].Text));
+                }
+            }
+        }
+    }
+}
