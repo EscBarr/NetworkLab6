@@ -25,7 +25,10 @@ namespace ClientForm
         public IPEndPoint ipPoint { get; set; }
         static TcpClient client;
         static NetworkStream stream;
-        public Dictionary<int, List<ClientInfo>> AllChats = new Dictionary<int, List<ClientInfo>>();
+        public Dictionary<int, List<ClientInfo>> AllChatsClients = new Dictionary<int, List<ClientInfo>>();
+        public Dictionary<int, string> ChatsNames = new Dictionary<int, string>();//хранение имен чатов а также ID которые выдал сервер
+        public Dictionary<int, List<string>> ChatsHistory = new Dictionary<int, List<string>>();//хранение истории чатов
+
         public List<ClientInfo> MainChat = new List<ClientInfo>();
         public Form1()
         {
@@ -55,7 +58,10 @@ namespace ClientForm
             }
         }
 
-     
+        public void InitiateChat(string chatName, List<ClientInfo> clientInfos)
+        {
+
+        }
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -66,6 +72,8 @@ namespace ClientForm
             dynamictextbox.Name = "dynamictextbox_" + tabControl1.TabPages[0].Name;
 
             tabControl1.TabPages[0].Controls.Add(dynamictextbox);
+            var Temp = new List<string>();
+            ChatsHistory.Add(-1, Temp);
         }
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -151,6 +159,7 @@ namespace ClientForm
         private void HandleMessages(PacketInfo messageHeader)
         {
             var message = GetMessage();
+            ChatsHistory[-1].Add(message);
             this.tabControl1.Invoke((MethodInvoker)delegate {
                 // Running on the UI thread
                 ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
@@ -206,14 +215,14 @@ namespace ClientForm
             }
         }
 
-        public static byte[] TrimEnd(byte[] array,int size)
-        {
-            //int lastIndex = Array.FindLastIndex(array, b => b != 0);
+        //public static byte[] TrimEnd(byte[] array,int size)
+        //{
+        //    //int lastIndex = Array.FindLastIndex(array, b => b != 0);
 
-            Array.Resize(ref array, size  + 1);
+        //    Array.Resize(ref array, size  + 1);
 
-            return array;
-        }
+        //    return array;
+        //}
 
         void Disconnect()
         {
