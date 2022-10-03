@@ -36,6 +36,7 @@ namespace Lab6Dependecies
 
     }
 
+    [Serializable]
     public record ChatInfo
     {
         public int ChatID { get; set; }

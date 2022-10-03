@@ -103,6 +103,7 @@
             this.Controls.Add(this.buttonSubmit);
             this.Name = "FormUserSelection";
             this.Text = "FormUserSelection";
+            this.Load += new System.EventHandler(this.FormUserSelection_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

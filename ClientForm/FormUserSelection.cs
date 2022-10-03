@@ -18,15 +18,7 @@ namespace ClientForm
         {
             InitializeComponent();
             Allclients = clients;
-            this.listView1.Invoke((MethodInvoker)delegate {
-                listView1.Items.Clear();
-                // Running on the UI thread
-                foreach (var item in Allclients)
-                {
-                    listView1.Items.Add(item.Name);
-                    listView1.Items.Add(item.ClientId.ToString());
-                }
-            });
+           
         }
 
         private void buttonSubmit_Click(object sender, EventArgs e)
@@ -39,7 +31,22 @@ namespace ClientForm
                 {
                    Selected.Add(Allclients.First(S => S.ClientId.ToString() == item.SubItems[1].Text));
                 }
+                Form1 Parent = (Form1)this.Owner;
+                Parent.ReceiveChatList(Selected);
             }
+        }
+
+        private void FormUserSelection_Load(object sender, EventArgs e)
+        {
+            this.listView1.Invoke((MethodInvoker)delegate {
+                listView1.Items.Clear();
+                // Running on the UI thread
+                foreach (var item in Allclients)
+                {
+                    listView1.Items.Add(item.Name).SubItems.Add(item.ClientId.ToString());
+
+                }
+            });
         }
     }
 }

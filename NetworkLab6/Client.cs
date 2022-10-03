@@ -47,11 +47,11 @@ namespace NetworkLab6
 
                 message = "Сервер: " + Name + " вошел в чат";
                 // посылаем сообщение о входе в чат всем подключенным пользователям
-                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text,null,-1);//подготавливаем заголовок
-                server.BroadcastMessageHeader(MessageHeader, ClientId, -1);
-                server.BroadcastMessage(message, ClientId,-1);//Оповещение для пользователей чата
+                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text,null,0);//подготавливаем заголовок
+                server.BroadcastMessageHeader(MessageHeader, ClientId, 0);
+                server.BroadcastMessage(message, ClientId,0);//Оповещение для пользователей чата
                 var ListUsers = server.ConvertClientList(server.ChatUsers);//Уменьшаем размер списка пользователей
-                server.BroadcastUsers(ListUsers,-1);//-1 так мы только установили соединение и пользователю нужен основной список
+                server.BroadcastUsers(ListUsers,0);//0 так мы только установили соединение и пользователю нужен основной список
                 Console.WriteLine(message);
                 // в бесконечном цикле получаем сообщения от клиента
                 while (true)
@@ -64,7 +64,7 @@ namespace NetworkLab6
                     {
                         message = String.Format("{0}: покинул чат", Name);
                         Console.WriteLine(message);
-                        server.BroadcastMessage(message, ClientId,-1);
+                        server.BroadcastMessage(message, ClientId,0);
                         break;
                     }
                 }
@@ -130,7 +130,7 @@ namespace NetworkLab6
                     HandleFile(MessageHeader);
                     break;
                 case MessageTypes.ChatCreation:
-                    HandleChatCreation();
+                    HandleChatCreation(MessageHeader);
                     break;
                 case MessageTypes.UserListForChat:
                     HandleUserList(MessageHeader);
@@ -160,7 +160,7 @@ namespace NetworkLab6
 
         }
 
-        private void HandleChatCreation()
+        private void HandleChatCreation(PacketInfo packetInfo)
         {
 
         }

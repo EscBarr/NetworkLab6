@@ -8,6 +8,9 @@ using System.Text.Json.Serialization;
 using System.Net.Http.Json;
 using System;
 using Lab6Dependecies;
+using System.Text.RegularExpressions;
+using System.Collections.Concurrent;
+using Tulpep.NotificationWindow;
 
 namespace ClientForm
 {
@@ -25,11 +28,11 @@ namespace ClientForm
         public IPEndPoint ipPoint { get; set; }
         static TcpClient client;
         static NetworkStream stream;
-        public Dictionary<int, List<ClientInfo>> AllChatsClients = new Dictionary<int, List<ClientInfo>>();
-        public Dictionary<int, string> ChatsNames = new Dictionary<int, string>();//хранение имен чатов а также ID которые выдал сервер
-        public Dictionary<int, List<string>> ChatsHistory = new Dictionary<int, List<string>>();//хранение истории чатов
+        public ConcurrentDictionary<int, List<ClientInfo>> AllChatsClients = new ConcurrentDictionary<int, List<ClientInfo>>();//хранение всех списков пользователей чата
+        public ConcurrentDictionary<int, string> ChatsNames = new ConcurrentDictionary<int, string>();//хранение имен чатов а также ID которые выдал сервер
+        public ConcurrentDictionary<int, List<string>> ChatsHistory = new ConcurrentDictionary<int, List<string>>();//хранение истории сообщений чатов по ID
 
-        public List<ClientInfo> MainChat = new List<ClientInfo>();
+        //public List<ClientInfo> MainChat = new List<ClientInfo>();
         public Form1()
         {
             InitializeComponent();
@@ -72,8 +75,11 @@ namespace ClientForm
             dynamictextbox.Name = "dynamictextbox_" + tabControl1.TabPages[0].Name;
 
             tabControl1.TabPages[0].Controls.Add(dynamictextbox);
-            var Temp = new List<string>();
-            ChatsHistory.Add(-1, Temp);
+
+            ChatsHistory.TryAdd(0, new List<string>());
+            AllChatsClients.TryAdd(0, new List<ClientInfo>());
+            ChatsNames.TryAdd(0, "Главный");
+
         }
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -90,6 +96,7 @@ namespace ClientForm
             dynamictextbox.Name = "dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name;
            
             tabControl1.TabPages[tabControl1.SelectedIndex].Controls.Add(dynamictextbox);
+
         }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
@@ -159,12 +166,45 @@ namespace ClientForm
         private void HandleMessages(PacketInfo messageHeader)
         {
             var message = GetMessage();
-            ChatsHistory[-1].Add(message);
+            ChatsHistory[messageHeader.ChatID].Add(message);
+            PrintMessageOrNotify(messageHeader.ChatID,message);
+        }
+
+        private void PrintMessageOrNotify(int ChatID,string message)
+        {
+            if(tabControl1.TabPages[tabControl1.SelectedIndex].Name == "tabPage"+ChatID.ToString())
+            {
+                this.tabControl1.Invoke((MethodInvoker)delegate {
+                    // Running on the UI thread
+                  ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
+                  ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
+                    
+                });
+            }
+            else//Вывести уведомление
+            {
+               
+                PopupNotifier popup = new PopupNotifier();
+                popup.Delay = 500;
+                popup.TitleText = "Сообщение из чата" + ChatsNames[ChatID];
+                popup.ContentText = message;
+                popup.Popup();// show 
+            }
+           
+        }
+
+        private void PrintAllMessages(int ChatID)
+        {
             this.tabControl1.Invoke((MethodInvoker)delegate {
                 // Running on the UI thread
-                ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
-                ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
+                foreach (var item in ChatsHistory[ChatID])
+                {
+                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(item);
+                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
+                }
+
             });
+
         }
 
         private void HandleP2PChatCreation()
@@ -175,14 +215,14 @@ namespace ClientForm
         private void HandleUserList(PacketInfo messageHeader)
         {
             var data = GetMessageWithSize((int)messageHeader.Size);
-            if (messageHeader.ChatID == -1)
+            if (messageHeader.ChatID == 0)
             {
-                MainChat = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
-                fillListView(MainChat);
+                AllChatsClients[messageHeader.ChatID] = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
+                fillListView(AllChatsClients[0]);
             }
             else
             {
-
+                AllChatsClients[messageHeader.ChatID] = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
             }
             
 
@@ -238,11 +278,15 @@ namespace ClientForm
             if(!String.IsNullOrEmpty(textBox1.Text))
             {
                 byte[] data = Encoding.UTF8.GetBytes(textBox1.Text);
-                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, data.Length, -1);//подготавливаем заголовок
+                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, data.Length, 0);//подготавливаем заголовок
                 stream.Write(MessageHeader,0, MessageHeader.Length);
                 Task.Delay(10);
                 stream.Write(data, 0, data.Length);
-                var message = String.Format("{0}: {1}", userName, textBox1.Text);
+                var message = String.Format("{0}: {1}", userName, textBox1.Text);                   
+                ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названия страницы всегда ID чата 
+                var IdChat = PageName.Slice(7);//TabPage...
+                
+                ChatsHistory[int.Parse(IdChat)].Add(message);//Сохраняем наше сообщение,чтобы чат можно было восстановить при переключении вкладок
                 this.tabControl1.Invoke((MethodInvoker)delegate {
                     // Running on the UI thread
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
@@ -266,27 +310,20 @@ namespace ClientForm
            
         }
 
-        //private static bool TryParseJSON(byte[] arrBytes)
-        //{
-        //    try
-        //    {
-        //        JsonSerializer.Deserialize<List<ClientInfo>>(arrBytes);
-        //        return true;
-        //    }
-        //    catch
-        //    {
-        //        return false;
-        //    }
-        //}
-
         public void ReceiveChatList(List<ClientInfo> clients)
         {
-            
+            byte[] data = MessageHandler.ObjectToByteArray(clients);
+            var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.ChatCreation, data.Length, 0);//подготавливаем заголовок
+            //stream.Write(MessageHeader, 0, MessageHeader.Length);
+            //Task.Delay(10);
+            //stream.Write(data, 0, data.Length);
         }
 
         private void GroupChatMenuItem_Click(object sender, EventArgs e)
         {
-
+            FormUserSelection newForm = new FormUserSelection(AllChatsClients[0]);
+            newForm.TopMost = true;
+            newForm.Show(this);
         }
 
         private void ConnectToServer_Click(object sender, EventArgs e)

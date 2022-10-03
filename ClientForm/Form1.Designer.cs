@@ -39,7 +39,7 @@
             this.NameColumnHeader = new System.Windows.Forms.ColumnHeader();
             this.label1 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPage0 = new System.Windows.Forms.TabPage();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -145,7 +145,7 @@
             // 
             // tabControl1
             // 
-            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage0);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
@@ -158,16 +158,16 @@
             this.tabControl1.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabControl1_Selecting);
             this.tabControl1.Selected += new System.Windows.Forms.TabControlEventHandler(this.tabControl1_Selected);
             // 
-            // tabPage1
+            // tabPage0
             // 
-            this.tabPage1.Location = new System.Drawing.Point(4, 28);
-            this.tabPage1.Margin = new System.Windows.Forms.Padding(4);
-            this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage1.Size = new System.Drawing.Size(690, 573);
-            this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Главный";
-            this.tabPage1.UseVisualStyleBackColor = true;
+            this.tabPage0.Location = new System.Drawing.Point(4, 28);
+            this.tabPage0.Margin = new System.Windows.Forms.Padding(4);
+            this.tabPage0.Name = "tabPage0";
+            this.tabPage0.Padding = new System.Windows.Forms.Padding(4);
+            this.tabPage0.Size = new System.Drawing.Size(690, 573);
+            this.tabPage0.TabIndex = 0;
+            this.tabPage0.Text = "Главный";
+            this.tabPage0.UseVisualStyleBackColor = true;
             // 
             // textBox1
             // 
@@ -270,7 +270,7 @@
         private ListView listView1;
         private Label label1;
         private TabControl tabControl1;
-        private TabPage tabPage1;
+        private TabPage tabPage0;
         private TextBox textBox1;
         private ColumnHeader NameColumnHeader;
         private TableLayoutPanel tableLayoutPanel1;

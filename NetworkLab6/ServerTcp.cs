@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Lab6Dependecies;
 using System.Net.WebSockets;
+using System.Collections.Concurrent;
 
 namespace NetworkLab6
 {
@@ -17,7 +18,7 @@ namespace NetworkLab6
         public int Port = 25565;
         public string IP = "192.168.1.38";
         static TcpListener listener;//для общего чата
-        public Dictionary<int, List<Client>> AllChats = new Dictionary<int, List<Client>>();
+        public ConcurrentDictionary<int, List<Client>> AllChats = new ConcurrentDictionary<int, List<Client>>();
         public List<Client> ChatUsers = new List<Client>();
        
         public void Initiate()
@@ -65,7 +66,7 @@ namespace NetworkLab6
             if (client != null)
                 ChatUsers.Remove(client);
             var ListUsers = ConvertClientList(ChatUsers);
-            BroadcastUsers(ListUsers,-1);
+            BroadcastUsers(ListUsers,0);
         }
         // отключение всех клиентов
         public void Shutdown()
@@ -81,7 +82,7 @@ namespace NetworkLab6
 
         public void BroadcastMessageHeader(byte[] data, Guid id, int ChatId)
         {
-            if (ChatId == -1)
+            if (ChatId == 0)
             {
                 
                 for (int i = 0; i < ChatUsers.Count; i++)
@@ -109,7 +110,7 @@ namespace NetworkLab6
         public void BroadcastMessage(string message, Guid id, int ChatId)
         {
             byte[] data = Encoding.UTF8.GetBytes(message);
-            if (ChatId==-1)
+            if (ChatId==0)
             {
                 for (int i = 0; i < ChatUsers.Count; i++)
                 {
@@ -147,7 +148,7 @@ namespace NetworkLab6
 
         public void BroadcastToAllUsers(byte[] data, int ChatId)//В основном для рассылки списка пользователей
         {
-            if (ChatId == -1)
+            if (ChatId == 0)
             {
                
                 for (int i = 0; i < ChatUsers.Count; i++)
