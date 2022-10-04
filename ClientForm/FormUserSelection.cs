@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ClientForm
 {
@@ -24,7 +25,7 @@ namespace ClientForm
         private void buttonSubmit_Click(object sender, EventArgs e)
         {
 
-            if (listView1.SelectedItems.Count >= 1)
+            if (listView1.SelectedItems.Count >= 1 && !String.IsNullOrEmpty(textBox1.Text))
             {
                 List<ClientInfo> Selected = new List<ClientInfo>();
                 foreach (ListViewItem item in listView1.Items)
@@ -32,7 +33,7 @@ namespace ClientForm
                    Selected.Add(Allclients.First(S => S.ClientId.ToString() == item.SubItems[1].Text));
                 }
                 Form1 Parent = (Form1)this.Owner;
-                Parent.ReceiveChatList(Selected);
+                Parent.CreateChat(textBox1.Text, Selected);
             }
         }
 

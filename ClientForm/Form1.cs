@@ -97,6 +97,13 @@ namespace ClientForm
            
             tabControl1.TabPages[tabControl1.SelectedIndex].Controls.Add(dynamictextbox);
 
+            ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названия страницы всегда ID чата 
+            var IdChat = PageName.Slice(7);//TabPage...
+
+            fillListView(AllChatsClients[int.Parse(IdChat)]);//Заполняем список пользователей канала
+            PrintAllMessages(int.Parse(IdChat));//Выводим все полученные сообщения
+            
+
         }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
@@ -139,7 +146,7 @@ namespace ClientForm
                     HandleFile(MessageHeader);
                     break;
                 case MessageTypes.ChatCreation:
-                    HandleChatCreation();
+                    HandleChatCreation(MessageHeader);
                     break;
                 case MessageTypes.UserList:
                     HandleUserList(MessageHeader);
@@ -147,6 +154,7 @@ namespace ClientForm
                 case MessageTypes.P2PChat:
                     HandleP2PChatCreation();
                     break;
+
             }
         }
 
@@ -183,7 +191,6 @@ namespace ClientForm
             }
             else//Вывести уведомление
             {
-               
                 PopupNotifier popup = new PopupNotifier();
                 popup.Delay = 500;
                 popup.TitleText = "Сообщение из чата" + ChatsNames[ChatID];
@@ -228,9 +235,15 @@ namespace ClientForm
 
         }
 
-        private void HandleChatCreation()
+        private void HandleChatCreation(PacketInfo messageHeader)
         {
-            throw new NotImplementedException();
+            var data = GetMessageWithSize((int)messageHeader.Size);
+            var chatinf = MessageHandler.ByteArrayToObject<ChatInfo>(data);
+            ChatsNames.TryAdd(messageHeader.ChatID, chatinf.ChatName);
+            AllChatsClients.TryAdd(messageHeader.ChatID, chatinf.CurChatUsers);
+            TabPage tp = new TabPage(chatinf.ChatName);
+            tp.Name = "tabPage" + messageHeader.ChatID.ToString();
+            tabControl1.TabPages.Add(tp);
         }
 
         private void HandleFile(PacketInfo messageHeader)
@@ -310,13 +323,18 @@ namespace ClientForm
            
         }
 
-        public void ReceiveChatList(List<ClientInfo> clients)
+        public void CreateChat(string ChatName, List<ClientInfo> clients)
         {
-            byte[] data = MessageHandler.ObjectToByteArray(clients);
-            var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.ChatCreation, data.Length, 0);//подготавливаем заголовок
-            //stream.Write(MessageHeader, 0, MessageHeader.Length);
-            //Task.Delay(10);
-            //stream.Write(data, 0, data.Length);
+            var Chatinf = new ChatInfo();
+            Chatinf.ChatName = ChatName;
+            Chatinf.ChatID = -1;
+            Chatinf.CurChatUsers = clients;
+            byte[] data = MessageHandler.ObjectToByteArray(Chatinf);
+            var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.ChatCreation, data.Length, -1);//подготавливаем заголовок
+            stream.Write(MessageHeader, 0, MessageHeader.Length);
+            Task.Delay(10);
+            stream.Write(data, 0, data.Length);//отправляем информацию о новом чате
+
         }
 
         private void GroupChatMenuItem_Click(object sender, EventArgs e)

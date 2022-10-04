@@ -147,6 +147,8 @@ namespace NetworkLab6
             string message = GetMessage();
             message = String.Format("{0}: {1}", Name, message);
             Console.WriteLine(message);
+            server.BroadcastMessageHeader(MessageHandler.ObjectToByteArray(packetInfo), ClientId, packetInfo.ChatID);
+            Task.Delay(10);
             server.BroadcastMessage(message, this.ClientId,packetInfo.ChatID);
          
         }
@@ -162,6 +164,16 @@ namespace NetworkLab6
 
         private void HandleChatCreation(PacketInfo packetInfo)
         {
+            var Data = GetMessageWithSize((int)packetInfo.Size);//Получаем иформацию о чате
+            var ChatInf = MessageHandler.ByteArrayToObject<ChatInfo>(Data);//Конвертация в информацию о чате
+            ChatInf.ChatID = server.AllChats.Count+1;//+1 так как 0 по умолчанию используется для общего чата
+            var ConvertedChatInfo = server.BackwardConvertClientList(ChatInf.CurChatUsers);//Получаем список клиентов с их потоками
+            server.AllChats.TryAdd(ChatInf.ChatID,ConvertedChatInfo);//Добавляем информацию о чате для сервера
+            packetInfo.ChatID = ChatInf.ChatID;
+            server.BroadcastToAllUsers(MessageHandler.ObjectToByteArray(packetInfo), ChatInf.ChatID);//отправляем заголовок с выданным для чата ID
+            Task.Delay(10);
+            server.BroadcastToAllUsers(Data, ChatInf.ChatID);//отсылаем информацию о чате всем кто был отмечен в списке
+
 
         }
         private void HandleP2PChatCreation()

@@ -16,6 +16,8 @@ namespace Lab6Dependecies
         ChatCreation,
         P2PChat,
         UserListForChat
+        //ChatCreatedOK,
+        //CharCreationError
     }
 
     [Serializable]
@@ -53,7 +55,6 @@ namespace Lab6Dependecies
             if (obj == null)
                 return null;
             return JsonSerializer.SerializeToUtf8Bytes(obj);
-
         }
 
         public static byte[] PrepareMessageHeader(MessageTypes Type, int? Size, int ChatId)

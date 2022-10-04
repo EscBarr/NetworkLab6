@@ -18,8 +18,8 @@ namespace NetworkLab6
         public int Port = 25565;
         public string IP = "192.168.1.38";
         static TcpListener listener;//для общего чата
-        public ConcurrentDictionary<int, List<Client>> AllChats = new ConcurrentDictionary<int, List<Client>>();
-        public List<Client> ChatUsers = new List<Client>();
+        public ConcurrentDictionary<int, List<Client>> AllChats = new ConcurrentDictionary<int, List<Client>>();//Информация по каждому чату
+        public List<Client> ChatUsers = new List<Client>();//для общего чата
        
         public void Initiate()
         {
@@ -181,7 +181,12 @@ namespace NetworkLab6
             return CovertClients;
         }
 
-
+        public List<Client> BackwardConvertClientList(List<ClientInfo> AllClients)
+        {
+            List<Client> CovertClients = ChatUsers.Where( P => AllClients.Any(p2=> p2.ClientId == P.ClientId)).ToList();
+            
+            return CovertClients;
+        }
 
     }
 }
