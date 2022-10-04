@@ -41,6 +41,8 @@ namespace NetworkLab6
             try
             {
                 Stream = client.GetStream();
+                client.ReceiveTimeout = 10;
+                client.SendTimeout = 10;
                 // получаем имя пользователя
                 string message = GetMessage();
                 Name = message;
@@ -49,8 +51,10 @@ namespace NetworkLab6
                 // посылаем сообщение о входе в чат всем подключенным пользователям
                 var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text,null,0);//подготавливаем заголовок
                 server.BroadcastMessageHeader(MessageHeader, ClientId, 0);
+                //Task.Delay(10).Wait();
                 server.BroadcastMessage(message, ClientId,0);//Оповещение для пользователей чата
                 var ListUsers = server.ConvertClientList(server.ChatUsers);//Уменьшаем размер списка пользователей
+                //Task.Delay(10).Wait();
                 server.BroadcastUsers(ListUsers,0);//0 так мы только установили соединение и пользователю нужен основной список
                 Console.WriteLine(message);
                 // в бесконечном цикле получаем сообщения от клиента
@@ -148,7 +152,7 @@ namespace NetworkLab6
             message = String.Format("{0}: {1}", Name, message);
             Console.WriteLine(message);
             server.BroadcastMessageHeader(MessageHandler.ObjectToByteArray(packetInfo), ClientId, packetInfo.ChatID);
-            Task.Delay(10);
+            //Task.Delay(10).Wait();
             server.BroadcastMessage(message, this.ClientId,packetInfo.ChatID);
          
         }
@@ -171,7 +175,7 @@ namespace NetworkLab6
             server.AllChats.TryAdd(ChatInf.ChatID,ConvertedChatInfo);//Добавляем информацию о чате для сервера
             packetInfo.ChatID = ChatInf.ChatID;
             server.BroadcastToAllUsers(MessageHandler.ObjectToByteArray(packetInfo), ChatInf.ChatID);//отправляем заголовок с выданным для чата ID
-            Task.Delay(10);
+            //Task.Delay(10);
             server.BroadcastToAllUsers(Data, ChatInf.ChatID);//отсылаем информацию о чате всем кто был отмечен в списке
 
 

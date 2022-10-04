@@ -30,6 +30,7 @@ namespace NetworkLab6
             // Прослушивание входящих соединений
             listener = new TcpListener(ipPoint);
             listener.Start();
+            
             Console.WriteLine("Сервер запущен. Ожидание подключений...");
             
                 while (true)
@@ -141,7 +142,7 @@ namespace NetworkLab6
             var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.UserList, data.Length,ChatId);//подготавливаем заголовок
             var test = MessageHandler.ByteArrayToObject<PacketInfo>(MessageHeader);
             BroadcastToAllUsers(MessageHeader, ChatId);
-            Task.Delay(10);
+            //Task.Delay(10);
             BroadcastToAllUsers(data,ChatId);
            
         }

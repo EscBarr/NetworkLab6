@@ -293,7 +293,7 @@ namespace ClientForm
                 byte[] data = Encoding.UTF8.GetBytes(textBox1.Text);
                 var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, data.Length, 0);//подготавливаем заголовок
                 stream.Write(MessageHeader,0, MessageHeader.Length);
-                Task.Delay(10);
+                //Task.Delay(10);
                 stream.Write(data, 0, data.Length);
                 var message = String.Format("{0}: {1}", userName, textBox1.Text);                   
                 ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названия страницы всегда ID чата 
@@ -332,7 +332,7 @@ namespace ClientForm
             byte[] data = MessageHandler.ObjectToByteArray(Chatinf);
             var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.ChatCreation, data.Length, -1);//подготавливаем заголовок
             stream.Write(MessageHeader, 0, MessageHeader.Length);
-            Task.Delay(10);
+            //Task.Delay(10);
             stream.Write(data, 0, data.Length);//отправляем информацию о новом чате
 
         }
