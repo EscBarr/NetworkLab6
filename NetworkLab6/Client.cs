@@ -41,15 +41,15 @@ namespace NetworkLab6
             try
             {
                 Stream = client.GetStream();
-                client.ReceiveTimeout = 10;
-                client.SendTimeout = 10;
+                //client.ReceiveTimeout = 10; ВОЗМОЖНО НУЖНО ДЛЯ ОТПРАВКИ/ПРИНЯТИЯ ФАЙЛОВ
+                //client.SendTimeout = 10;
                 // получаем имя пользователя
                 string message = GetMessage();
                 Name = message;
 
                 message = "Сервер: " + Name + " вошел в чат";
                 // посылаем сообщение о входе в чат всем подключенным пользователям
-                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text,null,0);//подготавливаем заголовок
+                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text,0,0);//подготавливаем заголовок
                 server.BroadcastMessageHeader(MessageHeader, ClientId, 0);
                 //Task.Delay(10).Wait();
                 server.BroadcastMessage(message, ClientId,0);//Оповещение для пользователей чата
@@ -91,21 +91,30 @@ namespace NetworkLab6
         //    return NotImplementedException();
         //}
 
-        private string GetMessage()//Получение первичной информации о сообщении тип/размер а также обычных текстовых сообщений
-        {
-            byte[] data = new byte[64]; // буфер для получаемых данных
-            StringBuilder builder = new StringBuilder();
-            int bytes = 0;
-            do
-            {
-                bytes = Stream.Read(data, 0, data.Length);
-                builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
-            }
-            while (Stream.DataAvailable);
+        //private string GetMessage()//Получение первичной информации о сообщении тип/размер а также обычных текстовых сообщений
+        //{
+        //    byte[] data = new byte[64]; // буфер для получаемых данных
+        //    StringBuilder builder = new StringBuilder();
+        //    int bytes = 0;
+        //    do
+        //    {
+        //        bytes = Stream.Read(data, 0, data.Length);
+        //        builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
+        //    }
+        //    while (Stream.DataAvailable);
 
             
 
-            return builder.ToString();
+        //    return builder.ToString();
+        //}
+
+        private int GetPacketSize()
+        {
+            byte[] data = new byte[4]; // буфер для получаемых данных
+
+            Stream.Read(data, 0, data.Length);
+
+            return BitConverter.ToInt32(data, 0);
         }
 
         private byte[] GetMessageWithSize(int size)//Получение первичной информации о сообщении тип/размер
@@ -123,6 +132,7 @@ namespace NetworkLab6
 
         private void HandleMessageType()
         {
+            int PacketSize = GetPacketSize();
             string message = GetMessage();//Получаем JSON заголовок
             var MessageHeader = MessageHandler.StringToObject<PacketInfo>(message);//Сериализуем в объект
             switch (MessageHeader.Type)//Обработка в зависимости от отправленного пользователем сообщения

@@ -24,7 +24,7 @@ namespace Lab6Dependecies
     public class PacketInfo
     {
         public MessageTypes Type { get; set; }
-        public int? Size { get; set; }
+        public int Size { get; set; }
         public int ChatID { get; set; }
         //public List<ClientInfo>? ClientsForChat;
     }
@@ -57,7 +57,7 @@ namespace Lab6Dependecies
             return JsonSerializer.SerializeToUtf8Bytes(obj);
         }
 
-        public static byte[] PrepareMessageHeader(MessageTypes Type, int? Size, int ChatId)
+        public static byte[] PrepareMessageHeader(MessageTypes Type, int Size, int ChatId)
         {
             var Packet = new PacketInfo
             {
