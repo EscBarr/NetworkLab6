@@ -41,8 +41,8 @@ namespace NetworkLab6
             try
             {
                 Stream = client.GetStream();
-                client.ReceiveTimeout = 10;
-                client.SendTimeout = 10;
+                //client.ReceiveTimeout = 10;
+                //client.SendTimeout = 10;
                 // получаем имя пользователя
                 string message = GetMessage();
                 Name = message;
