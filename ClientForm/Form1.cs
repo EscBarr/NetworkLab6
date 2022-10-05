@@ -17,17 +17,16 @@ namespace ClientForm
     //[Serializable]
     //public record ClientInfo
     //{
-
     //    public Guid ClientId { get; set; }
     //    public string Name { get; set; }
     //}
 
     public partial class Form1 : Form
     {
-        static string userName;
+        private static string userName;
         public IPEndPoint ipPoint { get; set; }
-        static TcpClient client;
-        static NetworkStream stream;
+        private static TcpClient client;
+        private static NetworkStream stream;
         public ConcurrentDictionary<int, List<ClientInfo>> AllChatsClients = new ConcurrentDictionary<int, List<ClientInfo>>();//хранение всех списков пользователей чата
         public ConcurrentDictionary<int, string> ChatsNames = new ConcurrentDictionary<int, string>();//хранение имен чатов а также ID которые выдал сервер
         public ConcurrentDictionary<int, List<string>> ChatsHistory = new ConcurrentDictionary<int, List<string>>();//хранение истории сообщений чатов по ID
@@ -63,7 +62,6 @@ namespace ClientForm
 
         public void InitiateChat(string chatName, List<ClientInfo> clientInfos)
         {
-
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -79,12 +77,10 @@ namespace ClientForm
             ChatsHistory.TryAdd(0, new List<string>());
             AllChatsClients.TryAdd(0, new List<ClientInfo>());
             ChatsNames.TryAdd(0, "√лавный");
-
         }
 
         private void Form1_Resize(object sender, EventArgs e)
         {
-         
         }
 
         private void tabControl1_Selecting(object sender, TabControlCancelEventArgs e)
@@ -94,16 +90,14 @@ namespace ClientForm
             dynamictextbox.Multiline = true;
             dynamictextbox.ReadOnly = true;
             dynamictextbox.Name = "dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name;
-           
+
             tabControl1.TabPages[tabControl1.SelectedIndex].Controls.Add(dynamictextbox);
 
-            ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названи€ страницы всегда ID чата 
+            ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названи€ страницы всегда ID чата
             var IdChat = PageName.Slice(7);//TabPage...
 
             fillListView(AllChatsClients[int.Parse(IdChat)]);//«аполн€ем список пользователей канала
             PrintAllMessages(int.Parse(IdChat));//¬ыводим все полученные сообщени€
-            
-
         }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
@@ -142,19 +136,22 @@ namespace ClientForm
                 case MessageTypes.Text:
                     HandleMessages(MessageHeader);
                     break;
+
                 case MessageTypes.File:
                     HandleFile(MessageHeader);
                     break;
+
                 case MessageTypes.ChatCreation:
                     HandleChatCreation(MessageHeader);
                     break;
+
                 case MessageTypes.UserList:
                     HandleUserList(MessageHeader);
                     break;
+
                 case MessageTypes.P2PChat:
                     HandleP2PChatCreation();
                     break;
-
             }
         }
 
@@ -175,18 +172,18 @@ namespace ClientForm
         {
             var message = GetMessage();
             ChatsHistory[messageHeader.ChatID].Add(message);
-            PrintMessageOrNotify(messageHeader.ChatID,message);
+            PrintMessageOrNotify(messageHeader.ChatID, message);
         }
 
-        private void PrintMessageOrNotify(int ChatID,string message)
+        private void PrintMessageOrNotify(int ChatID, string message)
         {
-            if(tabControl1.TabPages[tabControl1.SelectedIndex].Name == "tabPage"+ChatID.ToString())
+            if (tabControl1.TabPages[tabControl1.SelectedIndex].Name == "tabPage" + ChatID.ToString())
             {
-                this.tabControl1.Invoke((MethodInvoker)delegate {
+                this.tabControl1.Invoke((MethodInvoker)delegate
+                {
                     // Running on the UI thread
-                  ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
-                  ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
-                    
+                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
+                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
                 });
             }
             else//¬ывести уведомление
@@ -195,23 +192,21 @@ namespace ClientForm
                 popup.Delay = 500;
                 popup.TitleText = "—ообщение из чата" + ChatsNames[ChatID];
                 popup.ContentText = message;
-                popup.Popup();// show 
+                popup.Popup();// show
             }
-           
         }
 
         private void PrintAllMessages(int ChatID)
         {
-            this.tabControl1.Invoke((MethodInvoker)delegate {
+            this.tabControl1.Invoke((MethodInvoker)delegate
+            {
                 // Running on the UI thread
                 foreach (var item in ChatsHistory[ChatID])
                 {
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(item);
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
                 }
-
             });
-
         }
 
         private void HandleP2PChatCreation()
@@ -231,8 +226,6 @@ namespace ClientForm
             {
                 AllChatsClients[messageHeader.ChatID] = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
             }
-            
-
         }
 
         private void HandleChatCreation(PacketInfo messageHeader)
@@ -251,7 +244,7 @@ namespace ClientForm
             throw new NotImplementedException();
         }
 
-        void ReceiveMessage()
+        private void ReceiveMessage()
         {
             while (true)
             {
@@ -277,7 +270,7 @@ namespace ClientForm
         //    return array;
         //}
 
-        void Disconnect()
+        private void Disconnect()
         {
             if (stream != null)
                 stream.Close();//отключение потока
@@ -288,31 +281,32 @@ namespace ClientForm
 
         private void Sendbutton_Click(object sender, EventArgs e)
         {
-            if(!String.IsNullOrEmpty(textBox1.Text))
+            if (!String.IsNullOrEmpty(textBox1.Text))
             {
                 byte[] data = Encoding.UTF8.GetBytes(textBox1.Text);
                 var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, data.Length, 0);//подготавливаем заголовок
-                stream.Write(MessageHeader,0, MessageHeader.Length);
+                stream.Write(MessageHeader, 0, MessageHeader.Length);
                 //Task.Delay(10);
                 stream.Write(data, 0, data.Length);
-                var message = String.Format("{0}: {1}", userName, textBox1.Text);                   
-                ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названи€ страницы всегда ID чата 
+                var message = String.Format("{0}: {1}", userName, textBox1.Text);
+                ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названи€ страницы всегда ID чата
                 var IdChat = PageName.Slice(7);//TabPage...
-                
+
                 ChatsHistory[int.Parse(IdChat)].Add(message);//—охран€ем наше сообщение,чтобы чат можно было восстановить при переключении вкладок
-                this.tabControl1.Invoke((MethodInvoker)delegate {
+                this.tabControl1.Invoke((MethodInvoker)delegate
+                {
                     // Running on the UI thread
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
                 });
                 textBox1.Text = "";
             }
-            
         }
 
         private void fillListView(List<ClientInfo> clientInfos)
         {
-            this.listView1.Invoke((MethodInvoker)delegate {
+            this.listView1.Invoke((MethodInvoker)delegate
+            {
                 listView1.Items.Clear();
                 // Running on the UI thread
                 foreach (var item in clientInfos)
@@ -320,7 +314,6 @@ namespace ClientForm
                     listView1.Items.Add(item.Name);
                 }
             });
-           
         }
 
         public void CreateChat(string ChatName, List<ClientInfo> clients)
@@ -334,7 +327,6 @@ namespace ClientForm
             stream.Write(MessageHeader, 0, MessageHeader.Length);
             //Task.Delay(10);
             stream.Write(data, 0, data.Length);//отправл€ем информацию о новом чате
-
         }
 
         private void GroupChatMenuItem_Click(object sender, EventArgs e)
@@ -347,15 +339,13 @@ namespace ClientForm
         private void ConnectToServer_Click(object sender, EventArgs e)
         {
             FormConnect newForm = new FormConnect();
-            // passing this in ShowDialog will set the .Owner 
+            // passing this in ShowDialog will set the .Owner
             // property of the child form
             newForm.TopMost = true;
             newForm.Show(this);
             CreateChatMenuItem.Enabled = true;
             DisconnectFromServer.Enabled = true;
-
         }
-   
 
         private void DisconnectFromServer_Click(object sender, EventArgs e)
         {
