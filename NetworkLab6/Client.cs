@@ -42,18 +42,21 @@ namespace NetworkLab6
                 Stream = client.GetStream();
                 //client.ReceiveTimeout = 10; ВОЗМОЖНО НУЖНО ДЛЯ ОТПРАВКИ/ПРИНЯТИЯ ФАЙЛОВ
                 //client.SendTimeout = 10;
-                // получаем имя пользователя
-                string message = GetMessage();
+                //TODO: Стоит переписать первичное получение имени
+                // получаем имя пользователя 
+                int PacketSize = GetPacketSize();//Получаем размер строки
+                string message = GetStringWithSize(PacketSize);
                 Name = message;
 
                 message = "Сервер: " + Name + " вошел в чат";
                 // посылаем сообщение о входе в чат всем подключенным пользователям
-                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, 0, 0);//подготавливаем заголовок
-                server.BroadcastMessageHeader(MessageHeader, ClientId, 0);
-                //Task.Delay(10).Wait();
-                server.BroadcastMessage(message, ClientId, 0);//Оповещение для пользователей чата
-                var ListUsers = server.ConvertClientList(server.ChatUsers);//Уменьшаем размер списка пользователей
-                //Task.Delay(10).Wait();
+                var MessageByte = Encoding.UTF8.GetBytes(message);
+                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, MessageByte.Length, 0);//подготавливаем заголовок
+                var HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
+                server.BroadcastByteArray(HeaderSize, ClientId, 0);
+                server.BroadcastByteArray(MessageHeader, ClientId, 0);
+                server.BroadcastByteArray(MessageByte, ClientId, 0);//Оповещение для пользователей чата
+                var ListUsers = server.ConvertClientList(server.ChatUsers);//Преобразуем список пользователей
                 server.BroadcastUsers(ListUsers, 0);//0 так мы только установили соединение и пользователю нужен основной список
                 Console.WriteLine(message);
                 // в бесконечном цикле получаем сообщения от клиента
@@ -90,24 +93,24 @@ namespace NetworkLab6
         //    return NotImplementedException();
         //}
 
-        private string GetMessage()//Получение первичной информации о сообщении тип/размер а также обычных текстовых сообщений
-        {
-            byte[] data = new byte[64]; // буфер для получаемых данных
-            StringBuilder builder = new StringBuilder();
-            int bytes = 0;
-            do
-            {
-                bytes = Stream.Read(data, 0, data.Length);
-                builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
-            }
-            while (Stream.DataAvailable);
+        //private string GetMessage()//Получение первичной информации о сообщении тип/размер а также обычных текстовых сообщений
+        //{
+        //    byte[] data = new byte[64]; // буфер для получаемых данных
+        //    StringBuilder builder = new StringBuilder();
+        //    int bytes = 0;
+        //    do
+        //    {
+        //        bytes = Stream.Read(data, 0, data.Length);
+        //        builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
+        //    }
+        //    while (Stream.DataAvailable);
 
-            return builder.ToString();
-        }
+        //    return builder.ToString();
+        //}
 
         private int GetPacketSize()
         {
-            byte[] data = new byte[4]; // буфер для получаемых данных
+            byte[] data = new byte[4]; // получаем целое число с размером последуюшего заголовка
 
             Stream.Read(data, 0, data.Length);
 
@@ -160,7 +163,7 @@ namespace NetworkLab6
                     HandleChatCreation(MessageHeader, MessageHeaderBytes);
                     break;
 
-                case MessageTypes.UserListForChat:
+                case MessageTypes.UserListForChat://Изменение списка клиентов, когда кто-то отключился
                     HandleUserList(MessageHeader, MessageHeaderBytes);
                     break;
 
@@ -172,13 +175,13 @@ namespace NetworkLab6
 
         private void HandleMessages(PacketInfo packetInfo, byte[] Header)
         {
-            string message = GetStringWithSize(packetInfo.Size);
-            message = String.Format("{0}: {1}", Name, message);
+            string message = GetStringWithSize(packetInfo.Size);//Получаем строчку
+            message = String.Format("{0} {1}: {2}",packetInfo.ChatID,  Name, message);
             Console.WriteLine(message);
             //var Header = MessageHandler.ObjectToByteArray(packetInfo);
-            byte[] HeaderSize = BitConverter.GetBytes(Header.Length);
-            server.BroadcastMessageHeader(HeaderSize, ClientId, packetInfo.ChatID);
-            server.BroadcastMessageHeader(MessageHandler.ObjectToByteArray(packetInfo), ClientId, packetInfo.ChatID);
+            byte[] HeaderSize = MessageHandler.GetHeaderSize (Header.Length);
+            server.BroadcastByteArray(HeaderSize, ClientId, packetInfo.ChatID);
+            server.BroadcastByteArray(MessageHandler.ObjectToByteArray(packetInfo), ClientId, packetInfo.ChatID);
             //Task.Delay(10).Wait();
             server.BroadcastMessage(message, this.ClientId, packetInfo.ChatID);
         }
@@ -198,7 +201,13 @@ namespace NetworkLab6
             ChatInf.ChatID = server.AllChats.Count + 1;//+1 так как 0 по умолчанию используется для общего чата
             var ConvertedChatInfo = server.BackwardConvertClientList(ChatInf.CurChatUsers);//Получаем список клиентов с их потоками
             server.AllChats.TryAdd(ChatInf.ChatID, ConvertedChatInfo);//Добавляем информацию о чате для сервера
-            packetInfo.ChatID = ChatInf.ChatID;
+
+
+            packetInfo.ChatID = ChatInf.ChatID;//меняем на ID, выданный сервером
+
+            byte[] ChangedHeader = MessageHandler.ObjectToByteArray(packetInfo);//Сериализуем измененный заголовок
+            byte[] HeaderSize = MessageHandler.GetHeaderSize(ChangedHeader.Length);
+            server.BroadcastToAllUsers(HeaderSize, ChatInf.ChatID);
             server.BroadcastToAllUsers(MessageHandler.ObjectToByteArray(packetInfo), ChatInf.ChatID);//отправляем заголовок с выданным для чата ID
             //Task.Delay(10);
             server.BroadcastToAllUsers(Data, ChatInf.ChatID);//отсылаем информацию о чате всем кто был отмечен в списке

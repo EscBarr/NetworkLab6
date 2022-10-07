@@ -12,21 +12,24 @@ using System.Text.RegularExpressions;
 using System.Collections.Concurrent;
 using Tulpep.NotificationWindow;
 
+
 namespace ClientForm
 {
-    //[Serializable]
-    //public record ClientInfo
-    //{
-    //    public Guid ClientId { get; set; }
-    //    public string Name { get; set; }
-    //}
+
+    /// <summary>
+    /// TODO: Переписать стек принятия сообщения пользователя
+    /// TODO: Переписать стек отправки сообщений пользователем
+    /// TODO: Переписать стек отправки сообщений Сервера
+    /// TODO: Работа с отправкой файлов
+    /// </summary>
+
 
     public partial class Form1 : Form
     {
-        private static string userName;
+        static string userName;
         public IPEndPoint ipPoint { get; set; }
-        private static TcpClient client;
-        private static NetworkStream stream;
+        static TcpClient client;
+        static NetworkStream stream;
         public ConcurrentDictionary<int, List<ClientInfo>> AllChatsClients = new ConcurrentDictionary<int, List<ClientInfo>>();//хранение всех списков пользователей чата
         public ConcurrentDictionary<int, string> ChatsNames = new ConcurrentDictionary<int, string>();//хранение имен чатов а также ID которые выдал сервер
         public ConcurrentDictionary<int, List<string>> ChatsHistory = new ConcurrentDictionary<int, List<string>>();//хранение истории сообщений чатов по ID
@@ -49,10 +52,12 @@ namespace ClientForm
                 stream = client.GetStream(); // получаем поток
                 string message = userName;
                 byte[] data = Encoding.UTF8.GetBytes(message);
-                stream.Write(data, 0, data.Length);
+                byte[] NameSize = MessageHandler.GetHeaderSize(data.Length);
+                stream.Write(NameSize,0, NameSize.Length);//Размер Строки
+                stream.Write(data, 0, data.Length);//Сама строка
                 // запускаем новый поток для получения данных
                 Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
-                receiveThread.Start(); //старт потока
+                receiveThread.Start(); 
             }
             catch (Exception ex)
             {
@@ -62,6 +67,7 @@ namespace ClientForm
 
         public void InitiateChat(string chatName, List<ClientInfo> clientInfos)
         {
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -77,10 +83,12 @@ namespace ClientForm
             ChatsHistory.TryAdd(0, new List<string>());
             AllChatsClients.TryAdd(0, new List<ClientInfo>());
             ChatsNames.TryAdd(0, "Главный");
+
         }
 
         private void Form1_Resize(object sender, EventArgs e)
         {
+         
         }
 
         private void tabControl1_Selecting(object sender, TabControlCancelEventArgs e)
@@ -90,14 +98,16 @@ namespace ClientForm
             dynamictextbox.Multiline = true;
             dynamictextbox.ReadOnly = true;
             dynamictextbox.Name = "dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name;
-
+           
             tabControl1.TabPages[tabControl1.SelectedIndex].Controls.Add(dynamictextbox);
 
-            ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названия страницы всегда ID чата
+            ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названия страницы всегда ID чата 
             var IdChat = PageName.Slice(7);//TabPage...
 
             fillListView(AllChatsClients[int.Parse(IdChat)]);//Заполняем список пользователей канала
             PrintAllMessages(int.Parse(IdChat));//Выводим все полученные сообщения
+            
+
         }
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
@@ -127,32 +137,61 @@ namespace ClientForm
             return builder.ToString();
         }
 
+        private int GetPacketSize()
+        {
+            byte[] data = new byte[4]; // получаем целое число с размером последуюшего заголовка
+
+            stream.Read(data, 0, data.Length);
+
+            return BitConverter.ToInt32(data, 0);
+        }
+
+        /// <summary>
+        /// 1 Получение размера заголовка
+        /// 2 Получение заголовка
+        /// 3 Получения сообщения/Файла/Списка пользователей
+        /// </summary>
+
         private void HandleMessageType()
         {
-            string message = GetMessage();//Получаем JSON заголовок
-            var MessageHeader = MessageHandler.StringToObject<PacketInfo>(message);//Сериализуем в объект
+            //int HeaderSize = 
+            int PacketSize = GetPacketSize();//Получаем размер заголовка
+            var MessageHeaderBytes = GetMessageWithSize(PacketSize);//Получаем JSON заголовок
+            var MessageHeader = MessageHandler.ByteArrayToObject<PacketInfo>(MessageHeaderBytes);//Сериализуем в объект  
+            //string message = GetMessage();//Получаем JSON заголовок
+            //var MessageHeader = MessageHandler.StringToObject<PacketInfo>(message);//Сериализуем в объект
             switch (MessageHeader.Type)//Обработка в зависимости от отправленного пользователем сообщения
             {
                 case MessageTypes.Text:
                     HandleMessages(MessageHeader);
                     break;
-
                 case MessageTypes.File:
                     HandleFile(MessageHeader);
                     break;
-
                 case MessageTypes.ChatCreation:
                     HandleChatCreation(MessageHeader);
                     break;
-
                 case MessageTypes.UserList:
                     HandleUserList(MessageHeader);
                     break;
-
                 case MessageTypes.P2PChat:
                     HandleP2PChatCreation();
                     break;
+
             }
+        }
+
+        private string GetStringWithSize(int size)//Получение текста
+        {
+            byte[] data = new byte[size]; // буфер для получаемых данных
+            int bytes = 0;
+            do
+            {
+                bytes = stream.Read(data, 0, data.Length);
+            }
+            while (stream.DataAvailable);
+
+            return Encoding.UTF8.GetString(data);
         }
 
         private byte[] GetMessageWithSize(int size)//Получение первичной информации о сообщении тип/размер
@@ -170,20 +209,20 @@ namespace ClientForm
 
         private void HandleMessages(PacketInfo messageHeader)
         {
-            var message = GetMessage();
+            var message = GetStringWithSize(messageHeader.Size);
             ChatsHistory[messageHeader.ChatID].Add(message);
-            PrintMessageOrNotify(messageHeader.ChatID, message);
+            PrintMessageOrNotify(messageHeader.ChatID,message);
         }
 
-        private void PrintMessageOrNotify(int ChatID, string message)
+        private void PrintMessageOrNotify(int ChatID,string message)
         {
-            if (tabControl1.TabPages[tabControl1.SelectedIndex].Name == "tabPage" + ChatID.ToString())
+            if(tabControl1.TabPages[tabControl1.SelectedIndex].Name == "tabPage"+ChatID.ToString())
             {
-                this.tabControl1.Invoke((MethodInvoker)delegate
-                {
+                this.tabControl1.Invoke((MethodInvoker)delegate {
                     // Running on the UI thread
-                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
-                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
+                  ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
+                  ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
+                    
                 });
             }
             else//Вывести уведомление
@@ -192,21 +231,23 @@ namespace ClientForm
                 popup.Delay = 500;
                 popup.TitleText = "Сообщение из чата" + ChatsNames[ChatID];
                 popup.ContentText = message;
-                popup.Popup();// show
+                popup.Popup();// show 
             }
+           
         }
 
         private void PrintAllMessages(int ChatID)
         {
-            this.tabControl1.Invoke((MethodInvoker)delegate
-            {
+            this.tabControl1.Invoke((MethodInvoker)delegate {
                 // Running on the UI thread
                 foreach (var item in ChatsHistory[ChatID])
                 {
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(item);
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
                 }
+
             });
+
         }
 
         private void HandleP2PChatCreation()
@@ -226,6 +267,8 @@ namespace ClientForm
             {
                 AllChatsClients[messageHeader.ChatID] = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
             }
+            
+
         }
 
         private void HandleChatCreation(PacketInfo messageHeader)
@@ -244,7 +287,7 @@ namespace ClientForm
             throw new NotImplementedException();
         }
 
-        private void ReceiveMessage()
+        void ReceiveMessage()
         {
             while (true)
             {
@@ -270,7 +313,7 @@ namespace ClientForm
         //    return array;
         //}
 
-        private void Disconnect()
+        void Disconnect()
         {
             if (stream != null)
                 stream.Close();//отключение потока
@@ -281,32 +324,34 @@ namespace ClientForm
 
         private void Sendbutton_Click(object sender, EventArgs e)
         {
-            if (!String.IsNullOrEmpty(textBox1.Text))
+            if(!String.IsNullOrEmpty(textBox1.Text))
             {
-                byte[] data = Encoding.UTF8.GetBytes(textBox1.Text);
-                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, data.Length, 0);//подготавливаем заголовок
-                stream.Write(MessageHeader, 0, MessageHeader.Length);
-                //Task.Delay(10);
-                stream.Write(data, 0, data.Length);
-                var message = String.Format("{0}: {1}", userName, textBox1.Text);
-                ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названия страницы всегда ID чата
+                ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названия страницы всегда ID чата 
                 var IdChat = PageName.Slice(7);//TabPage...
 
+                byte[] data = Encoding.UTF8.GetBytes(textBox1.Text);
+                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, data.Length, int.Parse(IdChat));//подготавливаем заголовок
+                byte[] HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
+                stream.Write(HeaderSize,0,HeaderSize.Length);
+                stream.Write(MessageHeader,0, MessageHeader.Length);
+                stream.Write(data, 0, data.Length);
+                var message = String.Format("{0}: {1}", userName, textBox1.Text);                   
+
+                
                 ChatsHistory[int.Parse(IdChat)].Add(message);//Сохраняем наше сообщение,чтобы чат можно было восстановить при переключении вкладок
-                this.tabControl1.Invoke((MethodInvoker)delegate
-                {
+                this.tabControl1.Invoke((MethodInvoker)delegate {
                     // Running on the UI thread
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
                 });
                 textBox1.Text = "";
             }
+            
         }
 
         private void fillListView(List<ClientInfo> clientInfos)
         {
-            this.listView1.Invoke((MethodInvoker)delegate
-            {
+            this.listView1.Invoke((MethodInvoker)delegate {
                 listView1.Items.Clear();
                 // Running on the UI thread
                 foreach (var item in clientInfos)
@@ -314,6 +359,7 @@ namespace ClientForm
                     listView1.Items.Add(item.Name);
                 }
             });
+           
         }
 
         public void CreateChat(string ChatName, List<ClientInfo> clients)
@@ -324,28 +370,32 @@ namespace ClientForm
             Chatinf.CurChatUsers = clients;
             byte[] data = MessageHandler.ObjectToByteArray(Chatinf);
             var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.ChatCreation, data.Length, -1);//подготавливаем заголовок
+            byte[] HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
+            stream.Write(HeaderSize, 0, HeaderSize.Length);
             stream.Write(MessageHeader, 0, MessageHeader.Length);
-            //Task.Delay(10);
             stream.Write(data, 0, data.Length);//отправляем информацию о новом чате
+
         }
 
         private void GroupChatMenuItem_Click(object sender, EventArgs e)
         {
             FormUserSelection newForm = new FormUserSelection(AllChatsClients[0]);
-            newForm.TopMost = true;
+            //newForm.TopMost = true;
             newForm.Show(this);
         }
 
         private void ConnectToServer_Click(object sender, EventArgs e)
         {
             FormConnect newForm = new FormConnect();
-            // passing this in ShowDialog will set the .Owner
+            // passing this in ShowDialog will set the .Owner 
             // property of the child form
-            newForm.TopMost = true;
+            //newForm.TopMost = true;
             newForm.Show(this);
             CreateChatMenuItem.Enabled = true;
             DisconnectFromServer.Enabled = true;
+
         }
+   
 
         private void DisconnectFromServer_Click(object sender, EventArgs e)
         {

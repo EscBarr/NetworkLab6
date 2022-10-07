@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -67,6 +68,11 @@ namespace Lab6Dependecies
             };
         
             return ObjectToByteArray(Packet);
+        }
+
+        public static byte[] GetHeaderSize(int Size)
+        {
+            return BitConverter.GetBytes(Size);
         }
 
         // Convert a byte array to an Object

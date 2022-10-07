@@ -65,7 +65,20 @@ namespace NetworkLab6
             Client client = ChatUsers.FirstOrDefault(c => c.ClientId == id);
             // и удаляем его из списка подключений
             if (client != null)
+            {
                 ChatUsers.Remove(client);
+                foreach(var item in AllChats)//Далее удаляем пользователя из всех чатов в которых он состоял
+                {
+                    if(item.Value.Remove(client))
+                    {
+                        var NewListUsers = ConvertClientList(item.Value);
+                        BroadcastUsers(NewListUsers, item.Key);
+                    }
+                  
+                  
+                }
+            }
+               
             var ListUsers = ConvertClientList(ChatUsers);
             BroadcastUsers(ListUsers,0);
         }
@@ -81,7 +94,7 @@ namespace NetworkLab6
             Environment.Exit(0); //завершение процесса
         }
 
-        public void BroadcastMessageHeader(byte[] data, Guid id, int ChatId)
+        public void BroadcastByteArray(byte[] data, Guid id, int ChatId)
         {
             if (ChatId == 0)
             {
@@ -139,11 +152,11 @@ namespace NetworkLab6
         public void BroadcastUsers(List<ClientInfo> ListUsers, int ChatId)
         {
             var data = MessageHandler.ObjectToByteArray(ListUsers);//получаем размер сообщения
+            var HeaderSize = MessageHandler.GetHeaderSize(data.Length);//Получаем размер заголовка
             var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.UserList, data.Length,ChatId);//подготавливаем заголовок
-            var test = MessageHandler.ByteArrayToObject<PacketInfo>(MessageHeader);
-            BroadcastToAllUsers(MessageHeader, ChatId);
-            //Task.Delay(10);
-            BroadcastToAllUsers(data,ChatId);
+            BroadcastToAllUsers(HeaderSize, ChatId);//Размер заголовка
+            BroadcastToAllUsers(MessageHeader, ChatId);//Заголовок
+            BroadcastToAllUsers(data,ChatId);//Сообщение
            
         }
 
