@@ -34,6 +34,7 @@ namespace ClientForm
                 }
                 Form1 Parent = (Form1)this.Owner;
                 Parent.CreateChat(textBox1.Text, Selected);
+                this.Close();
             }
         }
 

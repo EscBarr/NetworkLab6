@@ -65,11 +65,6 @@ namespace ClientForm
             }
         }
 
-        public void InitiateChat(string chatName, List<ClientInfo> clientInfos)
-        {
-
-        }
-
         private void Form1_Load(object sender, EventArgs e)
         {
             TextBox dynamictextbox = new TextBox();
@@ -216,6 +211,7 @@ namespace ClientForm
                 // Running on the UI thread
                 foreach (var item in ChatsHistory[ChatID])
                 {
+                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).Clear();
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(item);
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
                 }
@@ -251,9 +247,15 @@ namespace ClientForm
             var chatinf = MessageHandler.ByteArrayToObject<ChatInfo>(data);
             ChatsNames.TryAdd(messageHeader.ChatID, chatinf.ChatName);
             AllChatsClients.TryAdd(messageHeader.ChatID, chatinf.CurChatUsers);
+            ChatsHistory.TryAdd(messageHeader.ChatID, new List<string>());
             TabPage tp = new TabPage(chatinf.ChatName);
             tp.Name = "tabPage" + messageHeader.ChatID.ToString();
-            tabControl1.TabPages.Add(tp);
+            this.tabControl1.Invoke((MethodInvoker)delegate {
+                // Running on the UI thread
+                tabControl1.TabPages.Add(tp);
+            });
+           
+
         }
 
         private void HandleFile(PacketInfo messageHeader)
