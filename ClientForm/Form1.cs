@@ -142,7 +142,7 @@ namespace ClientForm
             byte[] data = new byte[4]; // получаем целое число с размером последуюшего заголовка
 
             stream.Read(data, 0, data.Length);
-
+            var bytesAsString = Encoding.UTF8.GetString(data);
             return BitConverter.ToInt32(data, 0);
         }
 
@@ -154,11 +154,9 @@ namespace ClientForm
 
         private void HandleMessageType()
         {
-            //int HeaderSize = 
             int PacketSize = GetPacketSize();//Получаем размер заголовка
             var MessageHeaderBytes = GetMessageWithSize(PacketSize);//Получаем JSON заголовок
             var MessageHeader = MessageHandler.ByteArrayToObject<PacketInfo>(MessageHeaderBytes);//Сериализуем в объект  
-            //string message = GetMessage();//Получаем JSON заголовок
             //var MessageHeader = MessageHandler.StringToObject<PacketInfo>(message);//Сериализуем в объект
             switch (MessageHeader.Type)//Обработка в зависимости от отправленного пользователем сообщения
             {
@@ -184,12 +182,8 @@ namespace ClientForm
         private string GetStringWithSize(int size)//Получение текста
         {
             byte[] data = new byte[size]; // буфер для получаемых данных
-            int bytes = 0;
-            do
-            {
-                bytes = stream.Read(data, 0, data.Length);
-            }
-            while (stream.DataAvailable);
+
+            stream.Read(data, 0, data.Length);
 
             return Encoding.UTF8.GetString(data);
         }
@@ -197,12 +191,8 @@ namespace ClientForm
         private byte[] GetMessageWithSize(int size)//Получение первичной информации о сообщении тип/размер
         {
             byte[] data = new byte[size]; // буфер для получаемых данных
-            int bytes = 0;
-            do
-            {
-                bytes = stream.Read(data, 0, data.Length);
-            }
-            while (stream.DataAvailable);
+ 
+            stream.Read(data, 0, data.Length);
 
             return data;
         }

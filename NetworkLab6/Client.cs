@@ -27,21 +27,14 @@ namespace NetworkLab6
             serverObj.AddConnection(this);
         }
 
-        public void CreateChat()
-        {
-        }
-
-        public void CreateP2PChat()
-        {
-        }
-
         public void Process()
         {
             try
             {
                 Stream = client.GetStream();
-                //client.ReceiveTimeout = 10; ВОЗМОЖНО НУЖНО ДЛЯ ОТПРАВКИ/ПРИНЯТИЯ ФАЙЛОВ
-                //client.SendTimeout = 10;
+                /*client.ReceiveTimeout = 10;*/ //ВОЗМОЖНО НУЖНО ДЛЯ ОТПРАВКИ/ПРИНЯТИЯ ФАЙЛОВ
+                //client.SendTimeout = 100;
+                client.NoDelay = true;
                 //TODO: Стоит переписать первичное получение имени
                 // получаем имя пользователя 
                 int PacketSize = GetPacketSize();//Получаем размер строки
@@ -120,12 +113,8 @@ namespace NetworkLab6
         private byte[] GetMessageWithSize(int size)//Получение первичной информации о сообщении тип/размер
         {
             byte[] data = new byte[size]; // буфер для получаемых данных
-            int bytes = 0;
-            do
-            {
-                bytes = Stream.Read(data, 0, data.Length);
-            }
-            while (Stream.DataAvailable);
+            
+            Stream.Read(data, 0, data.Length);
 
             return data;
         }
@@ -133,12 +122,8 @@ namespace NetworkLab6
         private string GetStringWithSize(int size)//Получение текста
         {
             byte[] data = new byte[size]; // буфер для получаемых данных
-            int bytes = 0;
-            do
-            {
-                bytes = Stream.Read(data, 0, data.Length);
-            }
-            while (Stream.DataAvailable);
+
+            Stream.Read(data, 0, data.Length);
 
             return Encoding.UTF8.GetString(data);
         }

@@ -152,9 +152,13 @@ namespace NetworkLab6
         public void BroadcastUsers(List<ClientInfo> ListUsers, int ChatId)
         {
             var data = MessageHandler.ObjectToByteArray(ListUsers);//получаем размер сообщения
-            var HeaderSize = MessageHandler.GetHeaderSize(data.Length);//Получаем размер заголовка
+           
             var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.UserList, data.Length,ChatId);//подготавливаем заголовок
-            BroadcastToAllUsers(HeaderSize, ChatId);//Размер заголовка
+            var HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);//Получаем размер заголовка
+            //var bytesAsString = Encoding.UTF8.GetString(MessageHeader);
+            //var bytesAsString2 = Encoding.UTF8.GetString(data);
+            //var Test = MessageHandler.ByteArrayToObject<PacketInfo>(MessageHeader);
+            BroadcastToAllUsers(HeaderSize, ChatId);//Размер заголовка 
             BroadcastToAllUsers(MessageHeader, ChatId);//Заголовок
             BroadcastToAllUsers(data,ChatId);//Сообщение
            

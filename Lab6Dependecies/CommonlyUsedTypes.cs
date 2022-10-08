@@ -78,14 +78,15 @@ namespace Lab6Dependecies
         // Convert a byte array to an Object
         public static T ByteArrayToObject<T>(byte[] arrBytes)
         {
-            return JsonSerializer.Deserialize<T>(arrBytes);
+            var bytesAsString = Encoding.UTF8.GetString(arrBytes);
+            return JsonSerializer.Deserialize<T>(bytesAsString);
         }
 
-        // Convert a String to an Object
-        public static T StringToObject<T>(string obj)
-        {
-            return JsonSerializer.Deserialize<T>(obj);
-        }
+        //// Convert a String to an Object
+        //public static T StringToObject<T>(string obj)
+        //{
+        //    return JsonSerializer.Deserialize<T>(obj);
+        //}
 
     }
 
