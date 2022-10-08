@@ -122,21 +122,6 @@ namespace ClientForm
             //tabControl1.TabPages[tabControl1.SelectedIndex].Controls.Add(textBoxForChat);
         }
 
-        private string GetMessage()//Получение первичной информации о сообщении тип/размер а также обычных текстовых сообщений
-        {
-            byte[] data = new byte[64]; // буфер для получаемых данных
-            StringBuilder builder = new StringBuilder();
-            int bytes = 0;
-            do
-            {
-                bytes = stream.Read(data, 0, data.Length);
-                builder.Append(Encoding.UTF8.GetString(data, 0, bytes));
-            }
-            while (stream.DataAvailable);
-
-            return builder.ToString();
-        }
-
         private int GetPacketSize()
         {
             byte[] data = new byte[4]; // получаем целое число с размером последуюшего заголовка
@@ -157,7 +142,6 @@ namespace ClientForm
             int PacketSize = GetPacketSize();//Получаем размер заголовка
             var MessageHeaderBytes = GetMessageWithSize(PacketSize);//Получаем JSON заголовок
             var MessageHeader = MessageHandler.ByteArrayToObject<PacketInfo>(MessageHeaderBytes);//Сериализуем в объект  
-            //var MessageHeader = MessageHandler.StringToObject<PacketInfo>(message);//Сериализуем в объект
             switch (MessageHeader.Type)//Обработка в зависимости от отправленного пользователем сообщения
             {
                 case MessageTypes.Text:
