@@ -34,7 +34,7 @@ namespace NetworkLab6
                 Stream = client.GetStream();
                 /*client.ReceiveTimeout = 10;*/ //ВОЗМОЖНО НУЖНО ДЛЯ ОТПРАВКИ/ПРИНЯТИЯ ФАЙЛОВ
                 //client.SendTimeout = 100;
-                client.NoDelay = true;
+                //client.NoDelay = true;
                 //TODO: Стоит переписать первичное получение имени
                 // получаем имя пользователя 
                 int PacketSize = GetPacketSize();//Получаем размер строки
@@ -46,9 +46,12 @@ namespace NetworkLab6
                 var MessageByte = Encoding.UTF8.GetBytes(message);
                 var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, MessageByte.Length, 0);//подготавливаем заголовок
                 var HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
-                server.BroadcastByteArray(HeaderSize, ClientId, 0);
-                server.BroadcastByteArray(MessageHeader, ClientId, 0);
-                server.BroadcastByteArray(MessageByte, ClientId, 0);//Оповещение для пользователей чата
+                //server.BroadcastByteArray(HeaderSize, ClientId, 0);
+                //server.BroadcastByteArray(MessageHeader, ClientId, 0);
+                //server.BroadcastByteArray(MessageByte, ClientId, 0);//Оповещение для пользователей чата
+                server.BroadcastToAllUsers(HeaderSize, 0);
+                server.BroadcastToAllUsers(MessageHeader, 0);
+                server.BroadcastToAllUsers(MessageByte, 0);
                 var ListUsers = server.ConvertClientList(server.ChatUsers);//Преобразуем список пользователей
                 server.BroadcastUsers(ListUsers, 0);//0 так мы только установили соединение и пользователю нужен основной список
                 Console.WriteLine(message);
@@ -131,31 +134,35 @@ namespace NetworkLab6
         private void HandleMessageType()
         {
             int PacketSize = GetPacketSize();//Получаем размер заголовка
-            var MessageHeaderBytes = GetMessageWithSize(PacketSize);//Получаем JSON заголовок
-            var MessageHeader = MessageHandler.ByteArrayToObject<PacketInfo>(MessageHeaderBytes);//Сериализуем в объект                                                  //Сериализуем в объект
-
-            switch (MessageHeader.Type)//Обработка в зависимости от отправленного пользователем сообщения
+            if(PacketSize > 0)
             {
-                case MessageTypes.Text:
-                    HandleMessages(MessageHeader, MessageHeaderBytes);
-                    break;
+                var MessageHeaderBytes = GetMessageWithSize(PacketSize);//Получаем JSON заголовок
+                var MessageHeader = MessageHandler.ByteArrayToObject<PacketInfo>(MessageHeaderBytes);//Сериализуем в объект                                                  //Сериализуем в объект
 
-                case MessageTypes.File:
-                    HandleFile(MessageHeader);
-                    break;
+                switch (MessageHeader.Type)//Обработка в зависимости от отправленного пользователем сообщения
+                {
+                    case MessageTypes.Text:
+                        HandleMessages(MessageHeader, MessageHeaderBytes);
+                        break;
 
-                case MessageTypes.ChatCreation:
-                    HandleChatCreation(MessageHeader, MessageHeaderBytes);
-                    break;
+                    case MessageTypes.File:
+                        HandleFile(MessageHeader);
+                        break;
 
-                case MessageTypes.UserListForChat://Изменение списка клиентов, когда кто-то отключился
-                    HandleUserList(MessageHeader, MessageHeaderBytes);
-                    break;
+                    case MessageTypes.ChatCreation:
+                        HandleChatCreation(MessageHeader, MessageHeaderBytes);
+                        break;
 
-                case MessageTypes.P2PChat:
-                    HandleP2PChatCreation();
-                    break;
+                    case MessageTypes.UserListForChat://Изменение списка клиентов, когда кто-то отключился
+                        HandleUserList(MessageHeader, MessageHeaderBytes);
+                        break;
+
+                    case MessageTypes.P2PChat:
+                        HandleP2PChatCreation();
+                        break;
+                }
             }
+            
         }
 
         private void HandleMessages(PacketInfo packetInfo, byte[] Header)

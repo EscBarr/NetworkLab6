@@ -185,23 +185,27 @@ namespace ClientForm
 
         private void PrintMessageOrNotify(int ChatID,string message)
         {
-            if(tabControl1.TabPages[tabControl1.SelectedIndex].Name == "tabPage"+ChatID.ToString())
-            {
-                this.tabControl1.Invoke((MethodInvoker)delegate {
-                    // Running on the UI thread
+            this.tabControl1.Invoke((MethodInvoker)delegate {
+                // Running on the UI thread
+                ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названия страницы всегда ID чата 
+                var IdChat = PageName.Slice(7);//TabPage...
+                if (int.Parse(IdChat) == ChatID)
+                {
+                   
                   ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
                   ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
-                    
-                });
-            }
-            else//Вывести уведомление
-            {
-                PopupNotifier popup = new PopupNotifier();
-                popup.Delay = 500;
-                popup.TitleText = "Сообщение из чата" + ChatsNames[ChatID];
-                popup.ContentText = message;
-                popup.Popup();// show 
-            }
+
+                }
+                else//Вывести уведомление
+                {
+                    PopupNotifier popup = new PopupNotifier();
+                    popup.Delay = 500;
+                    popup.TitleText = "Сообщение из чата" + ChatsNames[ChatID];
+                    popup.ContentText = message;
+                    popup.Popup();// show 
+                }
+            });
+            
            
         }
 
