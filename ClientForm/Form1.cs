@@ -191,15 +191,13 @@ namespace ClientForm
                 var IdChat = PageName.Slice(7);//TabPage...
                 if (int.Parse(IdChat) == ChatID)
                 {
-                   
-                  ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
-                  ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
-
+                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
+                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
                 }
                 else//Вывести уведомление
                 {
                     PopupNotifier popup = new PopupNotifier();
-                    popup.Delay = 500;
+                    popup.Delay = 1000;
                     popup.TitleText = "Сообщение из чата" + ChatsNames[ChatID];
                     popup.ContentText = message;
                     popup.Popup();// show 
@@ -300,7 +298,7 @@ namespace ClientForm
                 stream.Close();//отключение потока
             if (client != null)
                 client.Close();//отключение клиента
-            //Environment.Exit(0); //завершение процесса
+            Environment.Exit(0); //завершение процесса
         }
 
         private void Sendbutton_Click(object sender, EventArgs e)
