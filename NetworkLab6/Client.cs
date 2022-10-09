@@ -134,15 +134,15 @@ namespace NetworkLab6
         private void HandleMessageType()
         {
             int PacketSize = GetPacketSize();//Получаем размер заголовка
-            if(PacketSize > 0)
-            {
+            //if(PacketSize > 0)
+            //{
                 var MessageHeaderBytes = GetMessageWithSize(PacketSize);//Получаем JSON заголовок
                 var MessageHeader = MessageHandler.ByteArrayToObject<PacketInfo>(MessageHeaderBytes);//Сериализуем в объект                                                  //Сериализуем в объект
 
                 switch (MessageHeader.Type)//Обработка в зависимости от отправленного пользователем сообщения
                 {
                     case MessageTypes.Text:
-                        HandleMessages(MessageHeader, MessageHeaderBytes);
+                        HandleMessages(MessageHeader,MessageHeaderBytes);
                         break;
 
                     case MessageTypes.File:
@@ -161,22 +161,37 @@ namespace NetworkLab6
                         HandleP2PChatCreation();
                         break;
                 }
-            }
+            //}
             
         }
 
         private void HandleMessages(PacketInfo packetInfo, byte[] Header)
         {
             string message = GetStringWithSize(packetInfo.Size);//Получаем строчку
-            message = String.Format("{0} {1}: {2}",packetInfo.ChatID,  Name, message);
-            Console.WriteLine(message);
-            //var Header = MessageHandler.ObjectToByteArray(packetInfo);
+
+            //message = String.Format("{1}: {2}",Name, message);
+            //Console.WriteLine(message);
+
+            ///DEBUG
+            //server.BroadcastToAllUsers(HeaderSize, 0);
+            //server.BroadcastToAllUsers(Header, 0);
+            //server.BroadcastToAllUsers(MessageByte, 0);
+            ///DEBUG
+
             byte[] HeaderSize = MessageHandler.GetHeaderSize (Header.Length);
+           
+            var MessageByte = Encoding.UTF8.GetBytes(message);
             server.BroadcastByteArray(HeaderSize, ClientId, packetInfo.ChatID);
             server.BroadcastByteArray(MessageHandler.ObjectToByteArray(packetInfo), ClientId, packetInfo.ChatID);
-            //Task.Delay(10).Wait();
             server.BroadcastMessage(message, this.ClientId, packetInfo.ChatID);
+            message = String.Format("ChatID: {0} {1}", packetInfo.ChatID, message);
+            Console.WriteLine(message); 
+
         }
+
+
+       
+           
 
         private void HandleFile(PacketInfo packetInfo)
         {

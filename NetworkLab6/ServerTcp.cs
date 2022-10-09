@@ -78,7 +78,6 @@ namespace NetworkLab6
                   
                 }
             }
-               
             var ListUsers = ConvertClientList(ChatUsers);
             BroadcastUsers(ListUsers,0);
         }

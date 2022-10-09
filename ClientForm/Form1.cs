@@ -308,16 +308,14 @@ namespace ClientForm
             {
                 ReadOnlySpan<Char> PageName = tabControl1.TabPages[tabControl1.SelectedIndex].Name;//в конце названия страницы всегда ID чата 
                 var IdChat = PageName.Slice(7);//TabPage...
-
-                byte[] data = Encoding.UTF8.GetBytes(textBox1.Text);
+                var message = String.Format("{0}: {1}", userName, textBox1.Text);
+                byte[] data = Encoding.UTF8.GetBytes(message);
                 var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, data.Length, int.Parse(IdChat));//подготавливаем заголовок
                 byte[] HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
-                stream.Write(HeaderSize,0,HeaderSize.Length);
-                stream.Write(MessageHeader,0, MessageHeader.Length);
+                stream.Write(HeaderSize, 0, HeaderSize.Length);
+                stream.Write(MessageHeader, 0, MessageHeader.Length);
                 stream.Write(data, 0, data.Length);
-                var message = String.Format("{0}: {1}", userName, textBox1.Text);                   
 
-                
                 ChatsHistory[int.Parse(IdChat)].Add(message);//Сохраняем наше сообщение,чтобы чат можно было восстановить при переключении вкладок
                 this.tabControl1.Invoke((MethodInvoker)delegate {
                     // Running on the UI thread
