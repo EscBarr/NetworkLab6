@@ -318,8 +318,9 @@ namespace ClientForm
                 ChatsHistory[int.Parse(IdChat)].Add(message);//Сохраняем наше сообщение,чтобы чат можно было восстановить при переключении вкладок
                 this.tabControl1.Invoke((MethodInvoker)delegate {
                     // Running on the UI thread
-                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
                     ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
+                    ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
+                    
                 });
                 textBox1.Text = "";
             }
