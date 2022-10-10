@@ -152,7 +152,7 @@
             this.tabControl1.Multiline = true;
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(698, 605);
+            this.tabControl1.Size = new System.Drawing.Size(698, 610);
             this.tabControl1.TabIndex = 4;
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             this.tabControl1.Selecting += new System.Windows.Forms.TabControlCancelEventHandler(this.tabControl1_Selecting);
@@ -164,7 +164,7 @@
             this.tabPage0.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage0.Name = "tabPage0";
             this.tabPage0.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage0.Size = new System.Drawing.Size(690, 573);
+            this.tabPage0.Size = new System.Drawing.Size(690, 578);
             this.tabPage0.TabIndex = 0;
             this.tabPage0.Text = "Главный";
             this.tabPage0.UseVisualStyleBackColor = true;
@@ -173,12 +173,12 @@
             // 
             this.textBox1.AllowDrop = true;
             this.textBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.textBox1.Location = new System.Drawing.Point(0, 605);
+            this.textBox1.Location = new System.Drawing.Point(0, 610);
             this.textBox1.Margin = new System.Windows.Forms.Padding(4);
-            this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(698, 31);
+            this.textBox1.Size = new System.Drawing.Size(698, 26);
             this.textBox1.TabIndex = 5;
+            this.textBox1.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBox1_KeyDown);
             // 
             // panel1
             // 
@@ -223,7 +223,7 @@
             // 
             this.Sendbutton.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.Sendbutton.Enabled = false;
-            this.Sendbutton.Location = new System.Drawing.Point(0, 577);
+            this.Sendbutton.Location = new System.Drawing.Point(0, 582);
             this.Sendbutton.Name = "Sendbutton";
             this.Sendbutton.Size = new System.Drawing.Size(698, 28);
             this.Sendbutton.TabIndex = 6;

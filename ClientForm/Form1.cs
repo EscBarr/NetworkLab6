@@ -381,5 +381,20 @@ namespace ClientForm
             CreateChatMenuItem.Enabled = false;
             DisconnectFromServer.Enabled = false;
         }
+
+
+        private void textBox1_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                //enter key is down
+
+                this.Sendbutton_Click(sender, e);
+
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+
+            }
+        }
     }
 }
