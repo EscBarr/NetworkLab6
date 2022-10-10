@@ -357,16 +357,12 @@ namespace ClientForm
 
         private void GroupChatMenuItem_Click(object sender, EventArgs e)
         {
-            FormUserSelection newForm = new FormUserSelection(AllChatsClients[0]);
-            //newForm.TopMost = true;
-            newForm.Show(this);
+          
         }
 
         private void ConnectToServer_Click(object sender, EventArgs e)
         {
             FormConnect newForm = new FormConnect();
-            // passing this in ShowDialog will set the .Owner 
-            // property of the child form
             //newForm.TopMost = true;
             newForm.Show(this);
             CreateChatMenuItem.Enabled = true;
@@ -395,6 +391,12 @@ namespace ClientForm
                 e.SuppressKeyPress = true;
 
             }
+        }
+
+        private void CreateChatMenuItem_Click(object sender, EventArgs e)
+        {
+            FormUserSelection newForm = new FormUserSelection(AllChatsClients[0]);
+            newForm.Show(this);
         }
     }
 }

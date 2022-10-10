@@ -50,5 +50,17 @@ namespace ClientForm
                 }
             });
         }
+
+        private void checkBox1_Click(object sender, EventArgs e)
+        {
+            if (checkBox1.Checked)
+            {
+                listView1.MultiSelect = false;
+            }
+            else
+            {
+                listView1.MultiSelect = true;
+            }
+        }
     }
 }

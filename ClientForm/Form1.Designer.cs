@@ -33,8 +33,6 @@
             this.ConnectToServer = new System.Windows.Forms.ToolStripMenuItem();
             this.DisconnectFromServer = new System.Windows.Forms.ToolStripMenuItem();
             this.CreateChatMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.GroupChatMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.PersonalChatMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listView1 = new System.Windows.Forms.ListView();
             this.NameColumnHeader = new System.Windows.Forms.ColumnHeader();
             this.label1 = new System.Windows.Forms.Label();
@@ -91,26 +89,11 @@
             // 
             // CreateChatMenuItem
             // 
-            this.CreateChatMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.GroupChatMenuItem,
-            this.PersonalChatMenuItem});
             this.CreateChatMenuItem.Enabled = false;
             this.CreateChatMenuItem.Name = "CreateChatMenuItem";
             this.CreateChatMenuItem.Size = new System.Drawing.Size(96, 19);
             this.CreateChatMenuItem.Text = "Создать чат";
-            // 
-            // GroupChatMenuItem
-            // 
-            this.GroupChatMenuItem.Name = "GroupChatMenuItem";
-            this.GroupChatMenuItem.Size = new System.Drawing.Size(137, 22);
-            this.GroupChatMenuItem.Text = "Групповой";
-            this.GroupChatMenuItem.Click += new System.EventHandler(this.GroupChatMenuItem_Click);
-            // 
-            // PersonalChatMenuItem
-            // 
-            this.PersonalChatMenuItem.Name = "PersonalChatMenuItem";
-            this.PersonalChatMenuItem.Size = new System.Drawing.Size(137, 22);
-            this.PersonalChatMenuItem.Text = "Личный";
+            this.CreateChatMenuItem.Click += new System.EventHandler(this.CreateChatMenuItem_Click);
             // 
             // listView1
             // 
@@ -277,8 +260,6 @@
         private Panel panel1;
         private Panel panel2;
         private ToolStripMenuItem CreateChatMenuItem;
-        private ToolStripMenuItem GroupChatMenuItem;
-        private ToolStripMenuItem PersonalChatMenuItem;
         private Button Sendbutton;
     }
 }
