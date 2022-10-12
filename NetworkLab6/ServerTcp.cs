@@ -48,11 +48,6 @@ namespace NetworkLab6
             }
         }
 
-        public void InitiateChat(List<Client> SelectedUsers)
-        {
-
-        }
-
         public void AddConnection(Client clientObj)
         {
             ChatUsers.Add(clientObj);

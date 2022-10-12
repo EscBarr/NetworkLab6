@@ -15,10 +15,7 @@ namespace Lab6Dependecies
         UserList,
         File,
         ChatCreation,
-        P2PChat,
         UserListForChat
-        //ChatCreatedOK,
-        //CharCreationError
     }
 
     [Serializable]
@@ -27,7 +24,6 @@ namespace Lab6Dependecies
         public MessageTypes Type { get; set; }
         public int Size { get; set; }
         public int ChatID { get; set; }
-        //public List<ClientInfo>? ClientsForChat;
     }
 
     [Serializable]
@@ -35,8 +31,6 @@ namespace Lab6Dependecies
     {
         public Guid ClientId { get; set; }
         public string Name { get; set; }
-
-
     }
 
     [Serializable]
@@ -50,7 +44,6 @@ namespace Lab6Dependecies
 
     public static class MessageHandler
     {
-
         public static byte[] ObjectToByteArray(object obj)
         {
             if (obj == null)
@@ -66,7 +59,7 @@ namespace Lab6Dependecies
                 Size = Size,
                 ChatID = ChatId
             };
-        
+
             return ObjectToByteArray(Packet);
         }
 
@@ -87,9 +80,5 @@ namespace Lab6Dependecies
         //{
         //    return JsonSerializer.Deserialize<T>(obj);
         //}
-
     }
-
-   
-
 }

@@ -14,23 +14,22 @@ namespace ClientForm
 {
     public partial class FormUserSelection : Form
     {
-        List<ClientInfo> Allclients;
+        private List<ClientInfo> Allclients;
+
         public FormUserSelection(List<ClientInfo> clients)
         {
             InitializeComponent();
             Allclients = clients;
-           
         }
 
         private void buttonSubmit_Click(object sender, EventArgs e)
         {
-
             if (listView1.SelectedItems.Count >= 1 && !String.IsNullOrEmpty(textBox1.Text))
             {
                 List<ClientInfo> Selected = new List<ClientInfo>();
                 foreach (ListViewItem item in listView1.Items)
                 {
-                   Selected.Add(Allclients.First(S => S.ClientId.ToString() == item.SubItems[1].Text));
+                    Selected.Add(Allclients.First(S => S.ClientId.ToString() == item.SubItems[1].Text));
                 }
                 Form1 Parent = (Form1)this.Owner;
                 Parent.CreateChat(textBox1.Text, Selected);
@@ -40,13 +39,13 @@ namespace ClientForm
 
         private void FormUserSelection_Load(object sender, EventArgs e)
         {
-            this.listView1.Invoke((MethodInvoker)delegate {
+            this.listView1.Invoke((MethodInvoker)delegate
+            {
                 listView1.Items.Clear();
                 // Running on the UI thread
                 foreach (var item in Allclients)
                 {
                     listView1.Items.Add(item.Name).SubItems.Add(item.ClientId.ToString());
-
                 }
             });
         }

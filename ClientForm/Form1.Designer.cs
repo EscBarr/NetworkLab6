@@ -38,6 +38,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage0 = new System.Windows.Forms.TabPage();
+            this.SendFilebutton = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
@@ -45,6 +46,7 @@
             this.Sendbutton = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
+            this.tabPage0.SuspendLayout();
             this.panel1.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -143,6 +145,7 @@
             // 
             // tabPage0
             // 
+            this.tabPage0.Controls.Add(this.SendFilebutton);
             this.tabPage0.Location = new System.Drawing.Point(4, 28);
             this.tabPage0.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage0.Name = "tabPage0";
@@ -151,6 +154,21 @@
             this.tabPage0.TabIndex = 0;
             this.tabPage0.Text = "Главный";
             this.tabPage0.UseVisualStyleBackColor = true;
+            // 
+            // SendFilebutton
+            // 
+            this.SendFilebutton.AllowDrop = true;
+            this.SendFilebutton.AutoSize = true;
+            this.SendFilebutton.Dock = System.Windows.Forms.DockStyle.Right;
+            this.SendFilebutton.Enabled = false;
+            this.SendFilebutton.FlatAppearance.BorderColor = System.Drawing.Color.Black;
+            this.SendFilebutton.Location = new System.Drawing.Point(586, 4);
+            this.SendFilebutton.Name = "SendFilebutton";
+            this.SendFilebutton.Size = new System.Drawing.Size(100, 570);
+            this.SendFilebutton.TabIndex = 0;
+            this.SendFilebutton.Text = "Отправка \r\nфайла";
+            this.SendFilebutton.UseVisualStyleBackColor = true;
+            this.SendFilebutton.Click += new System.EventHandler(this.SendFilebutton_Click);
             // 
             // textBox1
             // 
@@ -234,6 +252,8 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.tabControl1.ResumeLayout(false);
+            this.tabPage0.ResumeLayout(false);
+            this.tabPage0.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
@@ -261,5 +281,6 @@
         private Panel panel2;
         private ToolStripMenuItem CreateChatMenuItem;
         private Button Sendbutton;
+        private Button SendFilebutton;
     }
 }
