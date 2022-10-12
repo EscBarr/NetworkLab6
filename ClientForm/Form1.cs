@@ -251,7 +251,6 @@ namespace ClientForm
 
         private void HandleFile(PacketInfo messageHeader)
         {
-            throw new NotImplementedException();
         }
 
         private void ReceiveMessage()
@@ -411,7 +410,28 @@ namespace ClientForm
                 /// TODO: КРИВО ОТПРАВЛЯЕТСЯ название файла
                 stream.Write(SizeOfFileName, 0, SizeOfFileName.Length);//Размер строки
                 stream.Write(dataFileName, 0, dataFileName.Length);//Строчка
+
+                SendFileMessage(FileName);
             }
+        }
+
+        private void SendFileMessage(string FileName)
+        {
+            var message = String.Format("{0}: {1}", userName, FileName);
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, data.Length, GetCurrentChat());//подготавливаем заголовок
+            byte[] HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
+            stream.Write(HeaderSize, 0, HeaderSize.Length);
+            stream.Write(MessageHeader, 0, MessageHeader.Length);
+            stream.Write(data, 0, data.Length);
+
+            ChatsHistory[GetCurrentChat()].Add(message);//Сохраняем наше сообщение,чтобы чат можно было восстановить при переключении вкладок
+            this.tabControl1.Invoke((MethodInvoker)delegate
+            {
+                // Running on the UI thread
+                ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(message);
+                ((TextBox)tabControl1.TabPages[tabControl1.SelectedIndex].Controls["dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name]).AppendText(Environment.NewLine);
+            });
         }
     }
 }
