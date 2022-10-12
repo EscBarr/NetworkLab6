@@ -11,6 +11,7 @@ using Lab6Dependecies;
 using System.Text.RegularExpressions;
 using System.Collections.Concurrent;
 using Tulpep.NotificationWindow;
+using Microsoft.VisualBasic.ApplicationServices;
 
 namespace ClientForm
 {
@@ -235,7 +236,7 @@ namespace ClientForm
 
         private void HandleChatCreation(PacketInfo messageHeader)
         {
-            var data = GetMessageWithSize((int)messageHeader.Size);
+            var data = GetMessageWithSize(messageHeader.Size);
             var chatinf = MessageHandler.ByteArrayToObject<ChatInfo>(data);
             ChatsNames.TryAdd(messageHeader.ChatID, chatinf.ChatName);
             AllChatsClients.TryAdd(messageHeader.ChatID, chatinf.CurChatUsers);
@@ -251,11 +252,17 @@ namespace ClientForm
 
         private void HandleFile(PacketInfo messageHeader)
         {
+            var data = GetMessageWithSize(messageHeader.Size);
+            var FileNameSize = GetPacketSize();
+            var FileName = GetStringWithSize(FileNameSize);
+            var VS = File.Create(Path.Combine(Environment.CurrentDirectory, "Downloads", FileName));
+            VS.Write(data);
+            VS.Close();
         }
 
         private void ReceiveMessage()
         {
-            while (client.Connected)
+            while (true)
             {
                 try
                 {
@@ -339,10 +346,6 @@ namespace ClientForm
             stream.Write(data, 0, data.Length);//отправляем информацию о новом чате
         }
 
-        private void GroupChatMenuItem_Click(object sender, EventArgs e)
-        {
-        }
-
         private void ConnectToServer_Click(object sender, EventArgs e)
         {
             FormConnect newForm = new FormConnect();
@@ -392,6 +395,7 @@ namespace ClientForm
             {
                 string file = openFileDialog.FileName;
                 byte[] data = File.ReadAllBytes(file);
+
                 ///
                 /// TODO: Выводить имя файла как сообщение (Транслировать его всем пользователям)
                 ///

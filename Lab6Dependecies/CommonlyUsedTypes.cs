@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json;
@@ -65,6 +66,7 @@ namespace Lab6Dependecies
 
         public static byte[] GetHeaderSize(int Size)
         {
+            //IPAddress.HostToNetworkOrder(Size)
             return BitConverter.GetBytes(Size);
         }
 

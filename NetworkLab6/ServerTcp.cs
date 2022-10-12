@@ -16,23 +16,24 @@ namespace NetworkLab6
     public class ServerTcp
     {
         public int Port = 25565;
-        public string IP = "192.168.1.38";
-        static TcpListener listener;//для общего чата
+
+        //public string IP = "192.168.1.38";
+        public string IP = "26.199.248.200";
+
+        private static TcpListener listener;//для общего чата
         public ConcurrentDictionary<int, List<Client>> AllChats = new ConcurrentDictionary<int, List<Client>>();//Информация по каждому чату
         public List<Client> ChatUsers = new List<Client>();//для общего чата
-       
+
         public void Initiate()
         {
-
             try
-            { 
-            IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse(IP), Port);
-            // Прослушивание входящих соединений
-            listener = new TcpListener(ipPoint);
-            listener.Start();
-            
-            Console.WriteLine("Сервер запущен. Ожидание подключений...");
-            
+            {
+                IPEndPoint ipPoint = new IPEndPoint(IPAddress.Parse(IP), Port);
+                // Прослушивание входящих соединений
+                listener = new TcpListener(ipPoint);
+                listener.Start();
+                Console.WriteLine("Сервер запущен. Ожидание подключений...");
+
                 while (true)
                 {
                     TcpClient tcpClient = listener.AcceptTcpClient();
@@ -51,7 +52,6 @@ namespace NetworkLab6
         public void AddConnection(Client clientObj)
         {
             ChatUsers.Add(clientObj);
-            
         }
 
         public void RemoveConnection(Guid id)
@@ -62,20 +62,19 @@ namespace NetworkLab6
             if (client != null)
             {
                 ChatUsers.Remove(client);
-                foreach(var item in AllChats)//Далее удаляем пользователя из всех чатов в которых он состоял
+                foreach (var item in AllChats)//Далее удаляем пользователя из всех чатов в которых он состоял
                 {
-                    if(item.Value.Remove(client))
+                    if (item.Value.Remove(client))
                     {
                         var NewListUsers = ConvertClientList(item.Value);
                         BroadcastUsers(NewListUsers, item.Key);
                     }
-                  
-                  
                 }
             }
             var ListUsers = ConvertClientList(ChatUsers);
-            BroadcastUsers(ListUsers,0);
+            BroadcastUsers(ListUsers, 0);
         }
+
         // отключение всех клиентов
         public void Shutdown()
         {
@@ -92,7 +91,6 @@ namespace NetworkLab6
         {
             if (ChatId == 0)
             {
-                
                 for (int i = 0; i < ChatUsers.Count; i++)
                 {
                     if (ChatUsers[i].ClientId != id) // если id клиента не равно id отправляющего
@@ -118,7 +116,7 @@ namespace NetworkLab6
         public void BroadcastMessage(string message, Guid id, int ChatId)
         {
             byte[] data = Encoding.UTF8.GetBytes(message);
-            if (ChatId==0)
+            if (ChatId == 0)
             {
                 for (int i = 0; i < ChatUsers.Count; i++)
                 {
@@ -139,33 +137,30 @@ namespace NetworkLab6
                     }
                 }
             }
-           
         }
 
         // трансляция списка подключенных пользователей
         public void BroadcastUsers(List<ClientInfo> ListUsers, int ChatId)
         {
             var data = MessageHandler.ObjectToByteArray(ListUsers);//получаем размер сообщения
-           
-            var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.UserList, data.Length,ChatId);//подготавливаем заголовок
+
+            var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.UserList, data.Length, ChatId);//подготавливаем заголовок
             var HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);//Получаем размер заголовка
             //var bytesAsString = Encoding.UTF8.GetString(MessageHeader);
             //var bytesAsString2 = Encoding.UTF8.GetString(data);
             //var Test = MessageHandler.ByteArrayToObject<PacketInfo>(MessageHeader);
-            BroadcastToAllUsers(HeaderSize, ChatId);//Размер заголовка 
+            BroadcastToAllUsers(HeaderSize, ChatId);//Размер заголовка
             BroadcastToAllUsers(MessageHeader, ChatId);//Заголовок
-            BroadcastToAllUsers(data,ChatId);//Сообщение
-           
+            BroadcastToAllUsers(data, ChatId);//Сообщение
         }
 
         public void BroadcastToAllUsers(byte[] data, int ChatId)//В основном для рассылки списка пользователей
         {
             if (ChatId == 0)
             {
-               
                 for (int i = 0; i < ChatUsers.Count; i++)
                 {
-                   ChatUsers[i].Stream.Write(data, 0, data.Length); //передача данных 
+                    ChatUsers[i].Stream.Write(data, 0, data.Length); //передача данных
                 }
             }
             else
@@ -174,7 +169,7 @@ namespace NetworkLab6
 
                 for (int i = 0; i < Users.Count; i++)
                 {
-                  Users[i].Stream.Write(data, 0, data.Length); //передача данных
+                    Users[i].Stream.Write(data, 0, data.Length); //передача данных
                 }
             }
         }
@@ -182,7 +177,7 @@ namespace NetworkLab6
         public List<ClientInfo> ConvertClientList(List<Client> AllClients)
         {
             List<ClientInfo> CovertClients = new List<ClientInfo>();
-            
+
             foreach (var client in AllClients)
             {
                 var ClientInfo = new ClientInfo();
@@ -195,12 +190,9 @@ namespace NetworkLab6
 
         public List<Client> BackwardConvertClientList(List<ClientInfo> AllClients)
         {
-            List<Client> CovertClients = ChatUsers.Where( P => AllClients.Any(p2=> p2.ClientId == P.ClientId)).ToList();
-            
+            List<Client> CovertClients = ChatUsers.Where(P => AllClients.Any(p2 => p2.ClientId == P.ClientId)).ToList();
+
             return CovertClients;
         }
-
     }
 }
-
-

@@ -165,7 +165,7 @@ namespace NetworkLab6
                     break;
 
                 case MessageTypes.File:
-                    HandleFile(MessageHeader);
+                    HandleFile(MessageHeader, MessageHeaderBytes);
                     break;
 
                 case MessageTypes.ChatCreation:
@@ -192,13 +192,38 @@ namespace NetworkLab6
             var MessageByte = Encoding.UTF8.GetBytes(message);
             server.BroadcastByteArray(HeaderSize, ClientId, packetInfo.ChatID);
             server.BroadcastByteArray(MessageHandler.ObjectToByteArray(packetInfo), ClientId, packetInfo.ChatID);
+            //server.BroadcastByteArray(Header, ClientId, packetInfo.ChatID);
             server.BroadcastMessage(message, this.ClientId, packetInfo.ChatID);
             message = String.Format("ChatID: {0} {1}", packetInfo.ChatID, message);
             Console.WriteLine(message);
         }
 
-        private void HandleFile(PacketInfo packetInfo)
+        private void HandleFile(PacketInfo packetInfo, byte[] Header)
         {
+            var Data = GetMessageWithSize(packetInfo.Size);//ПОЛУЧАЕМ САМ ФАЙЛ
+            var FileNameSize = GetPacketSize();//ПОЛУЧАЕМ РАЗМЕР СТРОКИ С ИМЕНЕМ ФАЙЛА
+            var FileName = GetStringWithSize(FileNameSize);//ПОЛУЧАЕМ САМУ СТРОЧКУ
+            byte[] HeaderSize = MessageHandler.GetHeaderSize(Header.Length);
+            ///переупаковка строки с названием файла
+            ///govnocode
+            byte[] FileNameSize2 = MessageHandler.GetHeaderSize(FileNameSize);
+            byte[] Filename2 = Encoding.UTF8.GetBytes(FileName);
+
+            server.BroadcastByteArray(HeaderSize, ClientId, packetInfo.ChatID);
+            server.BroadcastByteArray(Header, ClientId, packetInfo.ChatID);
+            server.BroadcastByteArray(Data, ClientId, packetInfo.ChatID);
+            server.BroadcastByteArray(FileNameSize2, ClientId, packetInfo.ChatID);
+            server.BroadcastByteArray(Filename2, ClientId, packetInfo.ChatID);
+
+            /////govnocode
+            ///DEBUG
+            //server.BroadcastToAllUsers(HeaderSize, 0);
+            //server.BroadcastToAllUsers(Header, 0);
+            //server.BroadcastToAllUsers(Data, 0);
+
+            //server.BroadcastToAllUsers(FileNameSize2, 0);
+            //server.BroadcastToAllUsers(Filename2, 0);
+            ///DEBUG
         }
 
         private void HandleUserList(PacketInfo packetInfo, byte[] Header)
