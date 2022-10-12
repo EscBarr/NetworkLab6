@@ -64,12 +64,11 @@ namespace NetworkLab6
                         message = String.Format("{0}: покинул чат", Name);
                         Console.WriteLine(message);
                         var TMessageByte = Encoding.UTF8.GetBytes(message);
-                        var TMessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, MessageByte.Length, 0);//подготавливаем заголовок
-                        var THeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
+                        var TMessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, TMessageByte.Length, 0);//подготавливаем заголовок
+                        var THeaderSize = MessageHandler.GetHeaderSize(TMessageHeader.Length);
                         server.BroadcastToAllUsers(THeaderSize, 0);
                         server.BroadcastToAllUsers(TMessageHeader, 0);
                         server.BroadcastToAllUsers(TMessageByte, 0);
-                        //server.RemoveConnection(this.ClientId);
                         break;
                     }
                 }
