@@ -17,8 +17,8 @@ namespace NetworkLab6
     {
         public int Port = 25565;
 
-        public string IP = "192.168.1.38";
-        public string IP2 = "26.199.248.200";
+        public string IP2 = "192.168.1.38";
+        public string IP = "26.199.248.200";
 
         private static TcpListener listener;//для общего чата
         public ConcurrentDictionary<int, List<Client>> AllChats = new ConcurrentDictionary<int, List<Client>>();//Информация по каждому чату
