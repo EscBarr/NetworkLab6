@@ -1,5 +1,6 @@
 ﻿using Lab6Dependecies;
 using System.Net.Sockets;
+using System.Reflection.PortableExecutable;
 using System.Text;
 
 namespace NetworkLab6
@@ -66,9 +67,9 @@ namespace NetworkLab6
                         var TMessageByte = Encoding.UTF8.GetBytes(message);
                         var TMessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, TMessageByte.Length, 0);//подготавливаем заголовок
                         var THeaderSize = MessageHandler.GetHeaderSize(TMessageHeader.Length);
-                        server.BroadcastToAllUsers(THeaderSize, 0);
-                        server.BroadcastToAllUsers(TMessageHeader, 0);
-                        server.BroadcastToAllUsers(TMessageByte, 0);
+                        server.BroadcastByteArray(THeaderSize, ClientId, 0);
+                        server.BroadcastByteArray(TMessageHeader, ClientId, 0);
+                        server.BroadcastByteArray(TMessageByte, ClientId, 0);
                         break;
                     }
                 }
