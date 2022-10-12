@@ -62,6 +62,7 @@ namespace NetworkLab6
                         message = String.Format("{0}: покинул чат", Name);
                         Console.WriteLine(message);
                         server.BroadcastMessage(message, ClientId, 0);
+                        server.RemoveConnection(this.ClientId);
                         break;
                     }
                 }
