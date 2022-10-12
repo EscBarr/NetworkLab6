@@ -51,7 +51,7 @@ namespace NetworkLab6
                 server.BroadcastUsers(ListUsers, 0);//0 так мы только установили соединение и пользователю нужен основной список
                 Console.WriteLine(message);
                 // в бесконечном цикле получаем сообщения от клиента
-                while (true)
+                while (client.Connected)
                 {
                     try
                     {
@@ -192,8 +192,8 @@ namespace NetworkLab6
 
             var MessageByte = Encoding.UTF8.GetBytes(message);
             server.BroadcastByteArray(HeaderSize, ClientId, packetInfo.ChatID);
-            server.BroadcastByteArray(MessageHandler.ObjectToByteArray(packetInfo), ClientId, packetInfo.ChatID);
-            //server.BroadcastByteArray(Header, ClientId, packetInfo.ChatID);
+            //server.BroadcastByteArray(MessageHandler.ObjectToByteArray(packetInfo), ClientId, packetInfo.ChatID);
+            server.BroadcastByteArray(Header, ClientId, packetInfo.ChatID);
             server.BroadcastMessage(message, this.ClientId, packetInfo.ChatID);
             message = String.Format("ChatID: {0} {1}", packetInfo.ChatID, message);
             Console.WriteLine(message);
@@ -245,7 +245,6 @@ namespace NetworkLab6
             byte[] HeaderSize = MessageHandler.GetHeaderSize(ChangedHeader.Length);
             server.BroadcastToAllUsers(HeaderSize, ChatInf.ChatID);
             server.BroadcastToAllUsers(MessageHandler.ObjectToByteArray(packetInfo), ChatInf.ChatID);//отправляем заголовок с выданным для чата ID
-            //Task.Delay(10);
             server.BroadcastToAllUsers(Data, ChatInf.ChatID);//отсылаем информацию о чате всем кто был отмечен в списке
         }
 

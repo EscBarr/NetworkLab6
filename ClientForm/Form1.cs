@@ -262,7 +262,7 @@ namespace ClientForm
 
         private void ReceiveMessage()
         {
-            while (true)
+            while (client.Connected)
             {
                 try
                 {
