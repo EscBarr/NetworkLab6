@@ -222,7 +222,7 @@ namespace ClientForm
 
         private void HandleUserList(PacketInfo messageHeader)
         {
-            var data = GetMessageWithSize((int)messageHeader.Size);
+            var data = GetMessageWithSize(messageHeader.Size);
             if (messageHeader.ChatID == 0)
             {
                 AllChatsClients[messageHeader.ChatID] = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);

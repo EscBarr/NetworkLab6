@@ -41,9 +41,11 @@ namespace NetworkLab6
                 var MessageByte = Encoding.UTF8.GetBytes(message);
                 var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, MessageByte.Length, 0);//подготавливаем заголовок
                 var HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
+                ///DEBUG
                 //server.BroadcastByteArray(HeaderSize, ClientId, 0);
                 //server.BroadcastByteArray(MessageHeader, ClientId, 0);
                 //server.BroadcastByteArray(MessageByte, ClientId, 0);//Оповещение для пользователей чата
+                ///DEBUG
                 server.BroadcastToAllUsers(HeaderSize, 0);
                 server.BroadcastToAllUsers(MessageHeader, 0);
                 server.BroadcastToAllUsers(MessageByte, 0);
@@ -61,8 +63,13 @@ namespace NetworkLab6
                     {
                         message = String.Format("{0}: покинул чат", Name);
                         Console.WriteLine(message);
-                        server.BroadcastMessage(message, ClientId, 0);
-                        server.RemoveConnection(this.ClientId);
+                        var TMessageByte = Encoding.UTF8.GetBytes(message);
+                        var TMessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, MessageByte.Length, 0);//подготавливаем заголовок
+                        var THeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
+                        server.BroadcastToAllUsers(THeaderSize, 0);
+                        server.BroadcastToAllUsers(TMessageHeader, 0);
+                        server.BroadcastToAllUsers(TMessageByte, 0);
+                        //server.RemoveConnection(this.ClientId);
                         break;
                     }
                 }
