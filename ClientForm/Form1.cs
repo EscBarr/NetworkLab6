@@ -270,8 +270,7 @@ namespace ClientForm
                 }
                 catch
                 {
-                    Console.WriteLine("Подключение прервано!"); //соединение было прервано
-                    Console.ReadLine();
+                    MessageBox.Show("Подключение прервано!");
                     Disconnect();
                 }
             }

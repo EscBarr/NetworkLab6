@@ -70,9 +70,9 @@ namespace NetworkLab6
                         BroadcastUsers(NewListUsers, item.Key);
                     }
                 }
+                var ListUsers = ConvertClientList(ChatUsers);
+                BroadcastUsers(ListUsers, 0);
             }
-            var ListUsers = ConvertClientList(ChatUsers);
-            BroadcastUsers(ListUsers, 0);
         }
 
         // отключение всех клиентов
