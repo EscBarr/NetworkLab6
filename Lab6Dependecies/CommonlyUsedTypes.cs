@@ -16,7 +16,7 @@ namespace Lab6Dependecies
         UserList,
         File,
         ChatCreation,
-        UserListForChat
+        UserID
     }
 
     [Serializable]

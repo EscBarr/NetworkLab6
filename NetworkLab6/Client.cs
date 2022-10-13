@@ -23,6 +23,40 @@ namespace NetworkLab6
             serverObj.AddConnection(this);
         }
 
+        private void SendClientID()
+        {
+            var Client = new ClientInfo();
+            Client.ClientId = ClientId;
+            Client.Name = Name;
+            var ClientByte = MessageHandler.ObjectToByteArray(Client);
+            var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.UserID, ClientByte.Length, 0);//подготавливаем заголовок
+            var HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
+
+            server.BroadcastToSingleUser(HeaderSize, ClientId);
+            server.BroadcastToSingleUser(MessageHeader, ClientId);
+            server.BroadcastToSingleUser(ClientByte, ClientId);
+        }
+
+        private void InitialSendToClient(string message)
+        {
+            message = "Сервер: " + Name + " вошел в чат";
+            // посылаем сообщение о входе в чат всем подключенным пользователям
+            var MessageByte = Encoding.UTF8.GetBytes(message);
+            var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, MessageByte.Length, 0);//подготавливаем заголовок
+            var HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
+            ///DEBUG
+            //server.BroadcastByteArray(HeaderSize, ClientId, 0);
+            //server.BroadcastByteArray(MessageHeader, ClientId, 0);
+            //server.BroadcastByteArray(MessageByte, ClientId, 0);//Оповещение для пользователей чата
+            ///DEBUG
+            server.BroadcastToAllUsers(HeaderSize, 0);
+            server.BroadcastToAllUsers(MessageHeader, 0);
+            server.BroadcastToAllUsers(MessageByte, 0);
+            var ListUsers = server.ConvertClientList(server.ChatUsers);//Преобразуем список пользователей
+            server.BroadcastUsers(ListUsers, 0);//0 так мы только установили соединение и пользователю нужен основной список
+            Console.WriteLine(message);
+        }
+
         public void Process()
         {
             try
@@ -36,23 +70,8 @@ namespace NetworkLab6
                 int PacketSize = GetPacketSize();//Получаем размер строки
                 string message = GetStringWithSize(PacketSize);
                 Name = message;
-
-                message = "Сервер: " + Name + " вошел в чат";
-                // посылаем сообщение о входе в чат всем подключенным пользователям
-                var MessageByte = Encoding.UTF8.GetBytes(message);
-                var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.Text, MessageByte.Length, 0);//подготавливаем заголовок
-                var HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
-                ///DEBUG
-                //server.BroadcastByteArray(HeaderSize, ClientId, 0);
-                //server.BroadcastByteArray(MessageHeader, ClientId, 0);
-                //server.BroadcastByteArray(MessageByte, ClientId, 0);//Оповещение для пользователей чата
-                ///DEBUG
-                server.BroadcastToAllUsers(HeaderSize, 0);
-                server.BroadcastToAllUsers(MessageHeader, 0);
-                server.BroadcastToAllUsers(MessageByte, 0);
-                var ListUsers = server.ConvertClientList(server.ChatUsers);//Преобразуем список пользователей
-                server.BroadcastUsers(ListUsers, 0);//0 так мы только установили соединение и пользователю нужен основной список
-                Console.WriteLine(message);
+                InitialSendToClient(message);
+                SendClientID();
                 // в бесконечном цикле получаем сообщения от клиента
                 while (client.Connected)
                 {
@@ -179,10 +198,6 @@ namespace NetworkLab6
                 case MessageTypes.ChatCreation:
                     HandleChatCreation(MessageHeader, MessageHeaderBytes);
                     break;
-
-                case MessageTypes.UserListForChat://Изменение списка клиентов, когда кто-то отключился
-                    HandleUserList(MessageHeader, MessageHeaderBytes);
-                    break;
             }
         }
 
@@ -232,10 +247,6 @@ namespace NetworkLab6
             //server.BroadcastToAllUsers(FileNameSize2, 0);
             //server.BroadcastToAllUsers(Filename2, 0);
             ///DEBUG
-        }
-
-        private void HandleUserList(PacketInfo packetInfo, byte[] Header)
-        {
         }
 
         private void HandleChatCreation(PacketInfo packetInfo, byte[] Header)

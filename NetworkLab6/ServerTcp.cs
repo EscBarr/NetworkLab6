@@ -174,6 +174,15 @@ namespace NetworkLab6
             }
         }
 
+        public void BroadcastToSingleUser(byte[] data, Guid id)//В основном для рассылки списка пользователей
+        {
+            var User = ChatUsers.FirstOrDefault(t => t.ClientId == id);
+            if (User != null)
+            {
+                User.Stream.Write(data, 0, data.Length);
+            }
+        }
+
         public List<ClientInfo> ConvertClientList(List<Client> AllClients)
         {
             List<ClientInfo> CovertClients = new List<ClientInfo>();

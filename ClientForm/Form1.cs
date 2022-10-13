@@ -22,6 +22,7 @@ namespace ClientForm
     public partial class Form1 : Form
     {
         private static string userName;
+        private static Guid UserId;
         public IPEndPoint? ipPoint { get; set; }
         private static TcpClient client;
         private static NetworkStream stream;
@@ -114,6 +115,22 @@ namespace ClientForm
             return BitConverter.ToInt32(data, 0);
         }
 
+        private void ReceiveMessage()
+        {
+            while (client.Connected)
+            {
+                try
+                {
+                    HandleMessageType();
+                }
+                catch
+                {
+                    MessageBox.Show("Подключение прервано!");
+                    Disconnect();
+                }
+            }
+        }
+
         /// <summary>
         /// 1 Получение размера заголовка
         /// 2 Получение заголовка
@@ -142,7 +159,64 @@ namespace ClientForm
                 case MessageTypes.UserList:
                     HandleUserList(MessageHeader);
                     break;
+
+                case MessageTypes.UserID:
+                    HandleUserID(MessageHeader);
+                    break;
             }
+        }
+
+        private void HandleMessages(PacketInfo messageHeader)
+        {
+            var message = GetStringWithSize(messageHeader.Size);
+            ChatsHistory[messageHeader.ChatID].Add(message);
+            PrintMessageOrNotify(messageHeader.ChatID, message);
+        }
+
+        private void HandleUserList(PacketInfo messageHeader)
+        {
+            var data = GetMessageWithSize(messageHeader.Size);
+            if (messageHeader.ChatID == 0)
+            {
+                AllChatsClients[messageHeader.ChatID] = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
+                fillListView(AllChatsClients[0]);
+            }
+            else
+            {
+                AllChatsClients[messageHeader.ChatID] = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
+            }
+        }
+
+        private void HandleUserID(PacketInfo messageHeader)
+        {
+            var data = GetMessageWithSize(messageHeader.Size);
+            UserId = MessageHandler.ByteArrayToObject<ClientInfo>(data).ClientId;
+        }
+
+        private void HandleChatCreation(PacketInfo messageHeader)
+        {
+            var data = GetMessageWithSize(messageHeader.Size);
+            var chatinf = MessageHandler.ByteArrayToObject<ChatInfo>(data);
+            ChatsNames.TryAdd(messageHeader.ChatID, chatinf.ChatName);
+            AllChatsClients.TryAdd(messageHeader.ChatID, chatinf.CurChatUsers);
+            ChatsHistory.TryAdd(messageHeader.ChatID, new List<string>());
+            TabPage tp = new TabPage(chatinf.ChatName);
+            tp.Name = "tabPage" + messageHeader.ChatID.ToString();
+            this.tabControl1.Invoke((MethodInvoker)delegate
+            {
+                // Running on the UI thread
+                tabControl1.TabPages.Add(tp);
+            });
+        }
+
+        private void HandleFile(PacketInfo messageHeader)
+        {
+            var data = GetMessageWithSize(messageHeader.Size);
+            var FileNameSize = GetPacketSize();
+            var FileName = GetStringWithSize(FileNameSize);
+            var VS = File.Create(Path.Combine(Environment.CurrentDirectory, "Downloads", FileName));
+            VS.Write(data);
+            VS.Close();
         }
 
         private string GetStringWithSize(int size)//Получение текста
@@ -175,13 +249,6 @@ namespace ClientForm
             }
 
             return data;
-        }
-
-        private void HandleMessages(PacketInfo messageHeader)
-        {
-            var message = GetStringWithSize(messageHeader.Size);
-            ChatsHistory[messageHeader.ChatID].Add(message);
-            PrintMessageOrNotify(messageHeader.ChatID, message);
         }
 
         private void PrintMessageOrNotify(int ChatID, string message)
@@ -219,71 +286,6 @@ namespace ClientForm
                 }
             });
         }
-
-        private void HandleUserList(PacketInfo messageHeader)
-        {
-            var data = GetMessageWithSize(messageHeader.Size);
-            if (messageHeader.ChatID == 0)
-            {
-                AllChatsClients[messageHeader.ChatID] = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
-                fillListView(AllChatsClients[0]);
-            }
-            else
-            {
-                AllChatsClients[messageHeader.ChatID] = MessageHandler.ByteArrayToObject<List<ClientInfo>>(data);
-            }
-        }
-
-        private void HandleChatCreation(PacketInfo messageHeader)
-        {
-            var data = GetMessageWithSize(messageHeader.Size);
-            var chatinf = MessageHandler.ByteArrayToObject<ChatInfo>(data);
-            ChatsNames.TryAdd(messageHeader.ChatID, chatinf.ChatName);
-            AllChatsClients.TryAdd(messageHeader.ChatID, chatinf.CurChatUsers);
-            ChatsHistory.TryAdd(messageHeader.ChatID, new List<string>());
-            TabPage tp = new TabPage(chatinf.ChatName);
-            tp.Name = "tabPage" + messageHeader.ChatID.ToString();
-            this.tabControl1.Invoke((MethodInvoker)delegate
-            {
-                // Running on the UI thread
-                tabControl1.TabPages.Add(tp);
-            });
-        }
-
-        private void HandleFile(PacketInfo messageHeader)
-        {
-            var data = GetMessageWithSize(messageHeader.Size);
-            var FileNameSize = GetPacketSize();
-            var FileName = GetStringWithSize(FileNameSize);
-            var VS = File.Create(Path.Combine(Environment.CurrentDirectory, "Downloads", FileName));
-            VS.Write(data);
-            VS.Close();
-        }
-
-        private void ReceiveMessage()
-        {
-            while (client.Connected)
-            {
-                try
-                {
-                    HandleMessageType();
-                }
-                catch
-                {
-                    MessageBox.Show("Подключение прервано!");
-                    Disconnect();
-                }
-            }
-        }
-
-        //public static byte[] TrimEnd(byte[] array,int size)
-        //{
-        //    //int lastIndex = Array.FindLastIndex(array, b => b != 0);
-
-        //    Array.Resize(ref array, size  + 1);
-
-        //    return array;
-        //}
 
         private void Disconnect()
         {
@@ -376,7 +378,8 @@ namespace ClientForm
 
         private void CreateChatMenuItem_Click(object sender, EventArgs e)
         {
-            FormUserSelection newForm = new FormUserSelection(AllChatsClients[0]);
+            var Test = AllChatsClients[0].FindAll(t => t.ClientId != UserId);
+            FormUserSelection newForm = new FormUserSelection(Test);
             newForm.Show(this);
         }
 
