@@ -335,10 +335,14 @@ namespace ClientForm
 
         public void CreateChat(string ChatName, List<ClientInfo> clients)
         {
+            //Добавляем текущего пользователя
+            var ClientCur = AllChatsClients[0].Find(t => t.ClientId == UserId);
+            clients.Add(ClientCur);
             var Chatinf = new ChatInfo();
             Chatinf.ChatName = ChatName;
             Chatinf.ChatID = -1;
             Chatinf.CurChatUsers = clients;
+
             byte[] data = MessageHandler.ObjectToByteArray(Chatinf);
             var MessageHeader = MessageHandler.PrepareMessageHeader(MessageTypes.ChatCreation, data.Length, -1);//подготавливаем заголовок
             byte[] HeaderSize = MessageHandler.GetHeaderSize(MessageHeader.Length);
