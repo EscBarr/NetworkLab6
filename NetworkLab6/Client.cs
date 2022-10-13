@@ -261,6 +261,7 @@ namespace NetworkLab6
 
             byte[] ChangedHeader = MessageHandler.ObjectToByteArray(packetInfo);//Сериализуем измененный заголовок
             byte[] HeaderSize = MessageHandler.GetHeaderSize(ChangedHeader.Length);
+            //TODO:А
             server.BroadcastToAllUsers(HeaderSize, ChatInf.ChatID);
             server.BroadcastToAllUsers(MessageHandler.ObjectToByteArray(packetInfo), ChatInf.ChatID);//отправляем заголовок с выданным для чата ID
             server.BroadcastToAllUsers(Data, ChatInf.ChatID);//отсылаем информацию о чате всем кто был отмечен в списке

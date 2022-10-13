@@ -26,7 +26,7 @@ namespace ClientForm
             if (listView1.SelectedItems.Count >= 1 && !String.IsNullOrEmpty(textBox1.Text))
             {
                 List<ClientInfo> Selected = new List<ClientInfo>();
-                foreach (ListViewItem item in listView1.Items)
+                foreach (ListViewItem item in listView1.SelectedItems)
                 {
                     Selected.Add(Allclients.First(S => S.ClientId.ToString() == item.SubItems[1].Text));
                 }
