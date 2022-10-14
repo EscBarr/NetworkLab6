@@ -71,7 +71,6 @@ namespace ClientForm
             dynamictextbox.Name = "dynamictextbox_" + tabControl1.TabPages[0].Name;
 
             tabControl1.TabPages[0].Controls.Add(dynamictextbox);
-
             ChatsHistory.TryAdd(0, new List<string>());
             AllChatsClients.TryAdd(0, new List<ClientInfo>());
             ChatsNames.TryAdd(0, "Главный");
@@ -89,6 +88,7 @@ namespace ClientForm
             dynamictextbox.ReadOnly = true;
             dynamictextbox.Name = "dynamictextbox_" + tabControl1.TabPages[tabControl1.SelectedIndex].Name;
 
+            tabControl1.TabPages[tabControl1.SelectedIndex].Controls.Add(SendFilebutton);
             tabControl1.TabPages[tabControl1.SelectedIndex].Controls.Add(dynamictextbox);
 
             var IdChat = GetCurrentChat();

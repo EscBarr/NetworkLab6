@@ -157,8 +157,8 @@
             // 
             // SendFilebutton
             // 
-            this.SendFilebutton.AllowDrop = true;
             this.SendFilebutton.AutoSize = true;
+            this.SendFilebutton.Cursor = System.Windows.Forms.Cursors.Hand;
             this.SendFilebutton.Dock = System.Windows.Forms.DockStyle.Right;
             this.SendFilebutton.Enabled = false;
             this.SendFilebutton.FlatAppearance.BorderColor = System.Drawing.Color.Black;
